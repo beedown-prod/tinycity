@@ -1,0 +1,1245 @@
+<title>Tiny City Wiki</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;700;800;900&display=swap">
+<style>
+/* Layout: a sunny cartoon city - sky band header with a blocky skyline, chunky outlined "toy" cards with a hard
+   offset shadow (like the game's buttons), sticky chip nav, one long searchable page. */
+:root {
+  --sky: #9fd8ff; --sky2: #dff3ff; --bg: #f2f9ff; --card: #ffffff; --card2: #f4f8ff;
+  --ink: #0b1446; --muted: #4d5b88; --line: #0b1446;
+  --grass: #4fbf47; --grass2: #8ee07d; --sun: #ffc93a; --brick: #e2574c; --water: #3ea6ec;
+  --shadow: #0b1446;
+  --display: "Lilita One", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  --body: "Nunito", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --r: 14px; --money-bg: #dff7d6; --money-fg: #1f5a17;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sky: #17245a; --sky2: #0e1636; --bg: #0b1230; --card: #16204a; --card2: #1c2858;
+    --ink: #eef3ff; --muted: #a7b3dc; --line: #03061a; --shadow: #03061a;
+    --grass: #4fbf47; --grass2: #2f7f3b; --sun: #ffc93a; --brick: #ff6b5e; --water: #5ab8ff;
+    --money-bg: #1e4a25; --money-fg: #c9f5c0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --sky: #17245a; --sky2: #0e1636; --bg: #0b1230; --card: #16204a; --card2: #1c2858;
+  --ink: #eef3ff; --muted: #a7b3dc; --line: #03061a; --shadow: #03061a;
+  --grass: #4fbf47; --grass2: #2f7f3b; --sun: #ffc93a; --brick: #ff6b5e; --water: #5ab8ff;
+  --money-bg: #1e4a25; --money-fg: #c9f5c0;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.55; }
+a { color: inherit; }
+h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: 0.01em; text-wrap: balance; margin: 0; line-height: 1.1; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* ---------- hero ---------- */
+.hero { background: linear-gradient(180deg, var(--sky) 0%, var(--sky2) 100%); border-bottom: 4px solid var(--line); position: relative; overflow: hidden; }
+.hero .wrap { padding-block: 40px 0; position: relative; z-index: 1; }
+.hero h1 { font-size: clamp(44px, 8vw, 84px); color: var(--sun); -webkit-text-stroke: 3px var(--line); paint-order: stroke fill; text-shadow: 0 6px 0 var(--line); transform: rotate(-2deg); display: inline-block; }
+.hero h1 span { color: #fff; }
+.hero p { max-width: 60ch; font-size: 18px; font-weight: 700; margin: 18px 0 0; }
+.hero .facts { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 0; padding: 0; list-style: none; }
+.hero .facts li { background: var(--card); border: 3px solid var(--line); border-radius: 999px; padding: 4px 14px; font-weight: 800; font-size: 14px; box-shadow: 0 3px 0 var(--shadow); }
+
+.studio { display: inline-flex; align-items: center; gap: 12px; margin-top: 16px; padding: 8px 14px 8px 12px; background: #111; border: 3px solid var(--ink, #1d1b3a); border-radius: 14px; box-shadow: 0 5px 0 rgba(0,0,0,.35); color: #fff; text-decoration: none; font-weight: 800; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; transition: transform .15s; }
+.studio:hover { transform: translateY(-2px); }
+.studio img { height: 54px; width: auto; display: block; }
+footer .by { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+footer .bplogo { height: 34px; width: auto; background: #111; border-radius: 8px; padding: 4px 8px; }
+
+.skyline { display: none; }
+@media (max-width: 560px) { .skyline { height: 120px; } }
+.ground { height: 18px; background: var(--grass); border-top: 4px solid var(--line); }
+
+/* ---------- nav + search ---------- */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); border-bottom: 3px solid var(--line); }
+.bar .wrap { display: flex; gap: 12px; align-items: center; padding-block: 10px; flex-wrap: wrap; }
+.nav { display: flex; gap: 8px; overflow-x: auto; flex: 1 1 520px; min-width: 0; scrollbar-width: thin; padding-bottom: 2px; }
+.nav a { flex: none; text-decoration: none; font-weight: 800; font-size: 14px; padding: 5px 12px; border: 2px solid var(--line); border-radius: 999px; background: var(--card); }
+.nav a:hover, .nav a:focus-visible { background: var(--sun); color: #0b1446; outline: none; }
+.search { flex: 1 1 220px; display: flex; align-items: center; gap: 8px; background: var(--card); border: 3px solid var(--line); border-radius: 12px; padding: 2px 10px; box-shadow: 0 3px 0 var(--shadow); }
+.search input { border: 0; background: transparent; font: 700 15px var(--body); color: var(--ink); padding: 7px 0; width: 100%; min-width: 0; outline: none; }
+.search svg { flex: none; }
+.theme-btn { flex: none; font: 800 13px var(--body); border: 2px solid var(--line); background: var(--card); color: var(--ink); border-radius: 10px; padding: 6px 10px; cursor: pointer; }
+
+/* ---------- sections ---------- */
+main .wrap { padding-block: 26px 60px; display: grid; gap: 34px; }
+section { scroll-margin-top: 90px; display: grid; gap: 14px; min-width: 0; }
+section > h2 { font-size: clamp(30px, 4.5vw, 42px); display: flex; align-items: center; gap: 12px; }
+section > h2 .tag { font-family: var(--body); font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; background: var(--sun); color: #0b1446; border: 2px solid var(--line); border-radius: 8px; padding: 2px 8px; transform: rotate(-3deg); }
+.lead { max-width: 68ch; margin: 0; color: var(--muted); font-weight: 700; }
+.box { background: var(--card); border: 3px solid var(--line); border-radius: var(--r); box-shadow: 0 5px 0 var(--shadow); padding: 18px; min-width: 0; }
+.grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+.grid.wide { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+.card { background: var(--card); border: 3px solid var(--line); border-radius: var(--r); box-shadow: 0 5px 0 var(--shadow); padding: 14px 16px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.card h3 { font-size: 22px; }
+.card p { margin: 0; color: var(--muted); font-weight: 600; font-size: 15px; }
+.kv { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill { display: inline-flex; align-items: center; gap: 4px; font-weight: 800; font-size: 12.5px; border: 2px solid var(--line); border-radius: 999px; padding: 1px 9px; background: var(--card2); white-space: nowrap; }
+.pill.money { background: var(--money-bg); color: var(--money-fg); }
+.pill.mult { background: var(--sun); color: #0b1446; }
+.rar { display: inline-block; font-weight: 900; font-size: 11.5px; letter-spacing: 0.07em; text-transform: uppercase; color: #fff; border: 2px solid var(--line); border-radius: 6px; padding: 0 7px; white-space: nowrap; }
+.r-COMMON { background: #8c8c8c; } .r-UNCOMMON { background: #4f9a4f; } .r-RARE { background: #2468d2; }
+.r-EPIC { background: #872dd2; } .r-LEGENDARY { background: #cd8c00; } .r-MYTHIC { background: #c81446; }
+.r-EXCLUSIVE { background: #111; color: #ffd84a; } .r-LTD { background: #000; color: #fff; border: 2px solid #fff; box-shadow: 0 0 0 2px #000; margin-right: 6px; letter-spacing: .08em; } .r-SECRET { background: #341060; }
+/* the in-game title looks (ReplicatedStorage > TagStyle): COMMON / UNCOMMON / RARE stay one plain colour; EPIC and
+   rarer get a bright band leaning 35 degrees that sweeps across (faster the rarer it is); BOUNDLESS is white with two
+   icy shines and a glow that breathes between deep blue and violet */
+.r-BOUNDLESS { background: linear-gradient(125deg, #fff 0%, #fff 26%, #aadcff 32%, #fff 38%, #fff 58%, #aadcff 64%, #fff 70%, #fff 100%); background-size: 360% 100%; color: #1e288c; border-color: #1e288c; animation: tsweep 1s linear infinite, prismBox 3.9s ease-in-out infinite; }
+.rar.shine { background-image: linear-gradient(125deg, var(--m) 0%, var(--m) 34%, var(--b) 50%, var(--m) 66%, var(--m) 100%); background-size: 360% 100%; animation: tsweep var(--d) linear infinite; }
+@keyframes tsweep { from { background-position: 100% 0; } to { background-position: 0% 0; } }
+@keyframes prismBox { 0%, 100% { box-shadow: 0 0 0 1px #1e288c, 0 0 7px #1e288c; } 50% { box-shadow: 0 0 0 1px #6e28aa, 0 0 12px #8a3cd2; } }
+.plate { position: relative; overflow: hidden; display: inline-block; background: #f7f9ff; border: 2px solid var(--line); border-radius: 9px; padding: 2px 11px 3px; white-space: nowrap; }
+.tt { font-family: var(--display); font-weight: 900; font-size: 18px; letter-spacing: 0.04em; color: var(--m); -webkit-text-stroke: 0.4px var(--m); }
+/* a shiny title: the band runs through the letters AND a glare sweeps over the whole tag */
+.plate.lit::after { content: ""; position: absolute; inset: -2px; background: linear-gradient(115deg, transparent 0%, transparent 42%, rgba(255,255,255,.85) 50%, transparent 58%, transparent 100%); background-size: 300% 100%; animation: tsweep var(--d) linear infinite; pointer-events: none; mix-blend-mode: soft-light; }
+.tt.shine { -webkit-text-stroke: 0; background: linear-gradient(125deg, var(--m) 0%, var(--m) 34%, var(--b) 50%, var(--m) 66%, var(--m) 100%); background-size: 360% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: tsweep var(--d) linear infinite; }
+.tt.prism { -webkit-text-stroke: 0; background: linear-gradient(125deg, #fff 0%, #fff 26%, #aadcff 32%, #fff 38%, #fff 58%, #aadcff 64%, #fff 70%, #fff 100%); background-size: 360% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: tsweep 1s linear infinite, prismGlow 3.9s ease-in-out infinite; }
+@keyframes prismGlow { 0%, 100% { filter: drop-shadow(0 0 1px #1e288c) drop-shadow(0 0 1px #1e288c) drop-shadow(0 0 2px #1e288c); } 50% { filter: drop-shadow(0 0 1px #6e28aa) drop-shadow(0 0 1px #6e28aa) drop-shadow(0 0 3px #8a3cd2); } }
+.looks { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+.look { background: var(--card); border: 3px solid var(--line); border-radius: var(--r); box-shadow: 0 4px 0 var(--shadow); padding: 10px 12px; display: grid; gap: 6px; justify-items: start; }
+.look p { margin: 0; font-size: 13px; font-weight: 700; color: var(--muted); }
+html.calm .plate.lit::after { display: none; } html.calm *, html.calm *::before, html.calm *::after { animation: none !important; transition: none !important; }
+
+/* steps */
+.steps { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); counter-reset: s; margin: 0; padding: 0; list-style: none; }
+.steps li { counter-increment: s; background: var(--card); border: 3px solid var(--line); border-radius: var(--r); box-shadow: 0 5px 0 var(--shadow); padding: 14px 16px 14px 58px; position: relative; font-weight: 600; }
+.steps li::before { content: counter(s); position: absolute; left: 12px; top: 12px; width: 34px; height: 34px; border-radius: 50%; background: var(--grass); color: #fff; border: 3px solid var(--line); font-family: var(--display); font-size: 20px; display: grid; place-items: center; }
+.steps b { display: block; font-weight: 900; }
+
+/* tables */
+.tbl { overflow-x: auto; border: 3px solid var(--line); border-radius: var(--r); box-shadow: 0 5px 0 var(--shadow); background: var(--card); }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: 15px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 2px solid color-mix(in srgb, var(--line) 18%, transparent); vertical-align: top; }
+th { font-weight: 900; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.06em; background: var(--card2); position: sticky; top: 0; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+.swatch { display: inline-block; width: 14px; height: 14px; border-radius: 4px; border: 2px solid var(--line); vertical-align: -2px; margin-right: 6px; }
+details.lv summary { cursor: pointer; font-weight: 800; color: var(--water); }
+details.lv ol { margin: 6px 0 0; padding-left: 22px; color: var(--muted); font-weight: 600; font-size: 14px; columns: 2; column-gap: 24px; }
+details.lv ol li { break-inside: avoid; }
+details.lv ol li span { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* filters */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font: 800 13px var(--body); border: 2px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.chip:focus-visible, .theme-btn:focus-visible { outline: 3px solid var(--water); outline-offset: 2px; }
+
+.two { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.note { font-size: 14px; color: var(--muted); font-weight: 700; margin: 0; }
+.code { font-family: var(--display); font-size: 30px; letter-spacing: 0.06em; background: var(--sun); color: #0b1446; border: 3px solid var(--line); border-radius: 12px; padding: 4px 16px; box-shadow: 0 4px 0 var(--shadow); cursor: pointer; }
+.empty { display: none; font-weight: 800; color: var(--muted); }
+.hidden-by-search { display: none !important; }
+footer { border-top: 4px solid var(--line); background: var(--grass); color: #0b1446; font-weight: 800; }
+footer .wrap { padding-block: 18px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+/* hero picture */
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 28px; align-items: center; }
+.shot { margin: 0; background: var(--card); border: 4px solid var(--line); border-radius: 18px; box-shadow: 0 7px 0 var(--shadow); overflow: hidden; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-weight: 800; font-size: 13px; padding: 7px 12px; border-top: 3px solid var(--line); color: var(--muted); }
+.hero .shot { transform: rotate(2deg); }
+@media (max-width: 820px) { .hero-grid { grid-template-columns: 1fr; } .hero .shot { transform: none; } }
+
+/* building photos */
+.photo { padding: 0; overflow: hidden; gap: 0; }
+.photo img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-bottom: 3px solid var(--line); background: var(--sky); }
+.photo .in { padding: 12px 14px 14px; display: grid; gap: 6px; }
+.thumb { width: 64px; height: 48px; object-fit: cover; border: 2px solid var(--line); border-radius: 8px; vertical-align: middle; margin-right: 10px; background: var(--sky); }
+
+/* the Farm growing while you scroll */
+.grow { position: relative; height: 1200vh; }
+.grow-stick { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--barH, 70px) + 10px); display: grid; gap: 12px; }
+.grow-frame { position: relative; aspect-ratio: 16 / 9; width: min(100%, calc((100vh - var(--barH, 70px) - 140px) * 16 / 9)); margin: 0 auto; background: #7fd3e0; border: 4px solid var(--line); border-radius: 18px; box-shadow: 0 7px 0 var(--shadow); overflow: hidden; }
+.grow-frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .16s linear; }
+.grow-frame img.on { opacity: 1; transition: none; }
+.lvl { position: absolute; left: 14px; top: 14px; display: grid; gap: 2px; background: var(--card); color: var(--ink); border: 3px solid var(--line); border-radius: 14px; padding: 6px 14px 8px; box-shadow: 0 4px 0 var(--shadow); max-width: calc(100% - 28px); }
+.lvl small { font-weight: 900; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.lvl b { font-family: var(--display); font-weight: 400; font-size: clamp(26px, 4vw, 40px); line-height: 1; }
+.lvl span { font-weight: 800; font-size: 14px; }
+.pop { position: absolute; right: 14px; top: 14px; font-family: var(--display); font-size: 22px; color: var(--sun); -webkit-text-stroke: 2px #0b1446; paint-order: stroke fill; opacity: 0; transform: translateY(8px) scale(.9); }
+.pop.go { animation: pop .7s ease-out; }
+@keyframes pop { 0% { opacity: 0; transform: translateY(10px) scale(.8); } 25% { opacity: 1; transform: translateY(0) scale(1.08); } 75% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14px) scale(1); } }
+.hint { position: absolute; right: 14px; bottom: 14px; font-weight: 900; font-size: 13px; background: var(--sun); color: #0b1446; border: 2px solid var(--line); border-radius: 999px; padding: 3px 12px; transition: opacity .3s; }
+.ticks { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; }
+.ticks button { font: 900 12px var(--body); min-width: 40px; padding: 4px 6px; border: 2px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); cursor: pointer; }
+.ticks button[aria-current="true"] { background: var(--grass); color: #fff; }
+.ticks button:focus-visible { outline: 3px solid var(--water); outline-offset: 2px; }
+.bar-track { height: 12px; border: 3px solid var(--line); border-radius: 999px; background: var(--card); overflow: hidden; }
+.bar-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--grass), var(--sun)); }
+
+
+@media (max-width: 560px) { details.lv ol { columns: 1; } .lvl { left: 8px; top: 8px; padding: 3px 9px 5px; border-width: 2px; } .lvl b { font-size: 20px; } .lvl span { font-size: 12px; } .lvl small { font-size: 9px; } .pop { font-size: 16px; right: 8px; top: 8px; } .hint { font-size: 11px; right: 8px; bottom: 8px; } .hero .wrap { padding-block: 28px 0; } }
+/* ---------- money formula + calculator ---------- */
+.formula { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-weight: 900; font-size: 15px; }
+.formula .f { display: inline-grid; justify-items: center; gap: 2px; background: var(--card); border: 3px solid var(--line); border-radius: 12px; padding: 6px 12px; box-shadow: 0 4px 0 var(--shadow); }
+.formula .f small { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.formula .f b { font-family: var(--display); font-weight: 400; font-size: 20px; }
+.formula .op { font-family: var(--display); font-size: 26px; color: var(--muted); }
+.formula .f.total { background: var(--sun); color: #0b1446; }
+.formula .f.total small { color: #3b3f6a; }
+.calc { display: grid; gap: 14px; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+@media (max-width: 820px) { .calc { grid-template-columns: 1fr; } }
+.ctl { display: grid; gap: 14px; }
+.ctl label, .ctl .lab { font-weight: 900; font-size: 14px; display: flex; justify-content: space-between; gap: 10px; }
+.ctl label output, .ctl .lab output { font-variant-numeric: tabular-nums; color: var(--water); }
+.ctl input[type=range] { width: 100%; accent-color: var(--grass); }
+.ctl select, .ctl input[type=number] { font: 800 15px var(--body); color: var(--ink); background: var(--card2); border: 2px solid var(--line); border-radius: 10px; padding: 6px 10px; width: 100%; }
+.toggles { display: flex; flex-wrap: wrap; gap: 8px; }
+.toggles label { display: inline-flex; gap: 6px; align-items: center; border: 2px solid var(--line); border-radius: 999px; padding: 3px 12px 3px 8px; background: var(--card2); cursor: pointer; font-size: 13px; }
+.toggles input { accent-color: var(--grass); width: 16px; height: 16px; }
+.result { display: grid; gap: 10px; align-content: start; }
+.bigmoney { font-family: var(--display); font-size: clamp(36px, 6vw, 58px); line-height: 1; color: var(--grass); -webkit-text-stroke: 2px var(--line); paint-order: stroke fill; font-variant-numeric: tabular-nums; }
+.mults { display: grid; gap: 6px; }
+.mrow { display: grid; grid-template-columns: 110px minmax(0, 1fr) 64px; align-items: center; gap: 8px; font-weight: 800; font-size: 13px; }
+.mrow .t { height: 12px; border: 2px solid var(--line); border-radius: 999px; overflow: hidden; background: var(--card2); }
+.mrow .t i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--grass), var(--sun)); transition: width .5s cubic-bezier(.3,1.4,.5,1); }
+.mrow span:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.times { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.times div { background: var(--card2); border: 2px solid var(--line); border-radius: 10px; padding: 6px 8px; font-weight: 800; font-size: 12px; color: var(--muted); }
+.times b { display: block; color: var(--ink); font-size: 16px; font-variant-numeric: tabular-nums; }
+.coin { position: fixed; z-index: 50; width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff3b0, #ffc93a 45%, #d18a00); border: 2px solid #0b1446; pointer-events: none; display: grid; place-items: center; font: 900 11px var(--body); color: #0b1446; }
+
+/* ---------- animations ---------- */
+.coins-sky { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+.hero .wrap.hero-grid { position: relative; z-index: 2; }
+.coins-sky span { position: absolute; top: -40px; width: 20px; height: 20px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff3b0, #ffc93a 45%, #d18a00); border: 2px solid #0b1446; opacity: .9; }
+.road { position: relative; height: 26px; background: #5b6584; border-top: 4px solid var(--line); overflow: hidden; }
+.road::before { content: ""; position: absolute; left: 0; right: 0; top: 10px; height: 3px; background: repeating-linear-gradient(90deg, #ffd84a 0 26px, transparent 26px 56px); }
+.car { position: absolute; bottom: 3px; width: 46px; height: 16px; border: 2px solid #0b1446; border-radius: 6px 10px 3px 3px; }
+.car::before { content: ""; position: absolute; left: 10px; top: -9px; width: 20px; height: 9px; border: 2px solid #0b1446; border-bottom: 0; border-radius: 6px 6px 0 0; background: #bfe8ff; }
+.car::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: -6px; height: 8px; background: radial-gradient(circle, #0b1446 0 4px, transparent 4.5px) 0 0 / 34px 8px no-repeat, radial-gradient(circle, #0b1446 0 4px, transparent 4.5px) 100% 0 / 8px 8px no-repeat; }
+.win { animation: none; }
+section > h2 .tag { display: inline-block; }
+.reveal-in { animation: rise .6s cubic-bezier(.2,1.3,.4,1) backwards; }
+@keyframes rise { from { transform: translateY(22px) scale(.97); } to { transform: none; } }
+.card, .box, .look { transition: transform .18s ease, box-shadow .18s ease; }
+.card:hover, .look:hover { transform: translateY(-4px) rotate(-.6deg); box-shadow: 0 9px 0 var(--shadow); }
+.hero h1 { animation: none; }
+.hero .facts li b { font-variant-numeric: tabular-nums; }
+.sparkle { position: absolute; width: 10px; height: 10px; pointer-events: none; background: #fff; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }
+@media all {
+  .cloud { animation: drift 60s linear infinite; }
+  @keyframes drift { from { transform: translateX(-10%); } to { transform: translateX(110%); } }
+  .hero h1 { animation: bob 3.2s ease-in-out infinite; }
+  @keyframes bob { 0%, 100% { transform: rotate(-2deg) translateY(0); } 50% { transform: rotate(-1deg) translateY(-6px); } }
+  .coins-sky span { animation: fall linear infinite; }
+  @keyframes fall { from { transform: translateY(0) rotateY(0); } to { transform: translateY(560px) rotateY(720deg); } }
+  .car { animation: drive linear infinite; }
+  @keyframes drive { from { left: -60px; } to { left: calc(100% + 60px); } }
+  .car.back { animation-name: driveBack; }
+  @keyframes driveBack { from { left: calc(100% + 60px); transform: scaleX(-1); } to { left: -60px; transform: scaleX(-1); } }
+  .win { animation: twinkle 3s ease-in-out infinite; }
+  @keyframes twinkle { 0%, 100% { opacity: .85; } 50% { opacity: .25; } }
+  section > h2 .tag { animation: wiggle 4s ease-in-out infinite; }
+  @keyframes wiggle { 0%, 88%, 100% { transform: rotate(-3deg); } 92% { transform: rotate(4deg) scale(1.08); } 96% { transform: rotate(-5deg); } }
+  .sparkle { animation: spark .8s ease-out forwards; }
+  @keyframes spark { from { transform: scale(0) rotate(0); opacity: 1; } 60% { transform: scale(1.4) rotate(90deg); opacity: 1; } to { transform: scale(0) rotate(180deg); opacity: 0; } }
+}
+html.calm .coin, html.calm .sparkle { display: none; }
+
+/* ================= STYLIZED LAYER: every section is a toy baseplate with studs, a sticker banner title and its
+   own colour; the page sits on a studded sky ================= */
+body {
+  background:
+    radial-gradient(circle at 50% 45%, rgba(255,255,255,.5) 0 2.5px, transparent 3px) 0 0 / 24px 24px,
+    linear-gradient(180deg, var(--sky) 0, var(--bg) 900px);
+}
+#start { --sec: #4fbf47; } #buildings { --sec: #ffb52e; } #farm { --sec: #6cc644; } #money { --sec: #f4b400; }
+#rebirth { --sec: #ff6b4a; } #ascension { --sec: #8e5cff; } #skills { --sec: #6f7cff; } #events { --sec: #2fa8f0; }
+#spin { --sec: #ff5fa2; } #skins { --sec: #ff8a3d; } #boards { --sec: #18c7c7; } #styles { --sec: #e05cd0; }
+#titles { --sec: #a24bff; } #race { --sec: #ef4444; } #shop { --sec: #2fbf71; } #codes { --sec: #ffc93a; }
+main .wrap { gap: 64px; padding-block: 56px 70px; }
+main section {
+  --sec-bg: color-mix(in srgb, var(--sec) 13%, var(--card));
+  position: relative; padding: 34px clamp(14px, 3vw, 30px) 28px;
+  background:
+    radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--sec) 22%, transparent) 0 3px, transparent 3.5px) 0 0 / 26px 26px,
+    var(--sec-bg);
+  border: 4px solid var(--line); border-radius: 26px; box-shadow: 0 9px 0 var(--shadow);
+}
+/* the studs along the top edge, like a brick */
+main section::before {
+  content: ""; position: absolute; left: 28px; right: 28px; top: -13px; height: 13px;
+  background: radial-gradient(ellipse 9px 7px at 50% 100%, var(--sec) 0 7px, var(--line) 7.5px 9.5px, transparent 10px) 0 0 / 30px 13px repeat-x;
+}
+/* the title: a tilted sticker banner sticking out of the top */
+main section > h2 {
+  justify-self: start; margin: -60px 0 4px -6px; padding: 6px 20px 10px; background: var(--sec); color: #fff;
+  font-size: clamp(30px, 5vw, 46px); border: 4px solid var(--line); border-radius: 18px; box-shadow: 0 6px 0 var(--line);
+  -webkit-text-stroke: 2.5px var(--line); paint-order: stroke fill; text-shadow: 0 4px 0 var(--line);
+  transform: rotate(-1.5deg); position: relative; z-index: 2; flex-wrap: wrap;
+}
+main section > h2 .tag { -webkit-text-stroke: 0; text-shadow: none; font-size: 12px; background: #fff; transform: rotate(4deg); }
+main section .lead { color: var(--ink); font-size: 17px; }
+main section .card, main section .look, main section .steps li { box-shadow: inset 0 7px 0 var(--sec), 0 6px 0 var(--shadow); padding-top: 18px; }
+main section .card.photo { box-shadow: 0 6px 0 var(--shadow); padding-top: 0; }
+main section .box { box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--sec) 30%, transparent), 0 6px 0 var(--shadow); }
+main section .tbl { box-shadow: 0 6px 0 var(--shadow); }
+main section th { background: var(--sec); color: #fff; text-shadow: 0 2px 0 rgba(11,20,70,.55); }
+main section tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--sec) 7%, transparent); }
+main section tbody tr { transition: background .15s; }
+main section tbody tr:hover td { background: color-mix(in srgb, var(--sec) 18%, transparent); }
+main section .steps li::before { background: var(--sec); }
+main section .card h3 { font-size: 23px; }
+/* chunky "press me" buttons */
+.chip, .ticks button, .theme-btn, .nav a, .code { box-shadow: 0 3px 0 var(--shadow); transition: transform .12s, box-shadow .12s; }
+.chip:hover, .ticks button:hover, .theme-btn:hover, .nav a:hover { transform: translateY(-2px); box-shadow: 0 5px 0 var(--shadow); }
+.chip:active, .ticks button:active, .theme-btn:active, .nav a:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--shadow); }
+.nav a.here { background: var(--ink); color: var(--bg); }
+.bar { background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+/* hero: a turning sunburst behind the title, coloured fact pills */
+.sunburst { position: absolute; z-index: 0; width: 1300px; height: 1300px; left: -620px; top: -620px; border-radius: 50%; pointer-events: none;
+  background: repeating-conic-gradient(rgba(255,255,255,.38) 0 9deg, transparent 9deg 18deg);
+  -webkit-mask: radial-gradient(circle, #000 18%, transparent 62%); mask: radial-gradient(circle, #000 18%, transparent 62%); }
+.sun { position: absolute; z-index: 0; left: -45px; top: -45px; width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle at 40% 38%, #fff6c4, #ffd23f 55%, #ffb000); border: 4px solid var(--line); box-shadow: 0 0 0 10px rgba(255,214,70,.35), 0 0 60px 20px rgba(255,214,70,.45); opacity: .9; }
+.hero .facts li:nth-child(1) { background: #ffd84a; color: #0b1446; } .hero .facts li:nth-child(2) { background: #ff8f7a; color: #0b1446; }
+.hero .facts li:nth-child(3) { background: #c7a6ff; color: #0b1446; } .hero .facts li:nth-child(4) { background: #8fd6ff; color: #0b1446; }
+.hero .facts li:nth-child(5) { background: #9ee38f; color: #0b1446; }
+.hero h1 { font-size: clamp(52px, 9vw, 104px); text-shadow: 0 6px 0 var(--line), 0 12px 0 rgba(11,20,70,.25); }
+.motion-btn[aria-pressed="false"] { background: var(--card2); opacity: .8; }
+.motion-btn[aria-pressed="true"] { background: var(--sun); color: #0b1446; }
+@media all {
+  .sunburst { animation: spin 50s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .sun { animation: sunPulse 3.4s ease-in-out infinite; }
+  @keyframes sunPulse { 0%, 100% { box-shadow: 0 0 0 10px rgba(255,214,70,.35), 0 0 60px 20px rgba(255,214,70,.45); } 50% { box-shadow: 0 0 0 18px rgba(255,214,70,.2), 0 0 90px 34px rgba(255,214,70,.55); } }
+  .hero .facts li { animation: floaty 3s ease-in-out infinite; }
+  .hero .facts li:nth-child(2) { animation-delay: -.6s; } .hero .facts li:nth-child(3) { animation-delay: -1.2s; } .hero .facts li:nth-child(4) { animation-delay: -1.8s; } .hero .facts li:nth-child(5) { animation-delay: -2.4s; }
+  @keyframes floaty { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-5px) rotate(1deg); } }
+  main section > h2 { animation: banner 5s ease-in-out infinite; }
+  @keyframes banner { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(-0.4deg) translateY(-2px); } }
+  .formula .f.total { animation: jackpot 1.6s ease-in-out infinite; }
+  @keyframes jackpot { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06) rotate(-1deg); } }
+  .bigmoney { animation: glowMoney 2.4s ease-in-out infinite; }
+  @keyframes glowMoney { 0%, 100% { filter: drop-shadow(0 0 0 rgba(255,201,58,0)); } 50% { filter: drop-shadow(0 0 12px rgba(255,201,58,.9)); } }
+}
+@media (max-width: 560px) { main section > h2 { margin-top: -54px; } .sun { width: 100px; height: 100px; left: -40px; top: -40px; } }
+</style>
+
+<header class="hero" id="top">
+  <div class="sunburst" aria-hidden="true"></div><div class="sun" aria-hidden="true"></div>
+  <div class="coins-sky" id="coinsSky" aria-hidden="true"></div>
+  <div class="wrap hero-grid">
+    <div>
+      <h1>TINY <span>CITY</span> WIKI</h1>
+      <p>Everything about Tiny City on Roblox: every building, rebirths and ascension, the city events, plot skins, hoverboards, UI styles, all the titles, the daily spin and the hoverboard race.</p>
+      <ul class="facts">
+        <li>19 buildings</li><li>15 rebirths</li><li>10 ascensions</li><li>15 events</li><li>77 titles</li>
+      </ul>
+      <a class="studio" href="https://www.roblox.com/communities/489390716" target="_blank" rel="noopener"><span>A game by</span><img src="img/beedowns_logo.png" alt="Beedown's Production" width="600" height="200"></a>
+    </div>
+    <figure class="shot"><img src="img/hero_city.jpg" alt="The plots of Tiny City around the fountain, with the city skyline behind" width="1400" height="785"><figcaption>The plaza and the 8 plots, straight from the game</figcaption></figure>
+  </div>
+  
+  <div class="ground"></div>
+  
+</header>
+
+<div class="bar">
+  <div class="wrap">
+    <nav class="nav" aria-label="Sections">
+      <a href="#start">Start</a><a href="#buildings">Buildings</a><a href="#farm">Farm</a><a href="#money">Money</a><a href="#rebirth">Rebirths</a>
+      <a href="#ascension">Ascension</a><a href="#skills">Skill tree</a><a href="#events">Events</a><a href="#spin">Daily spin</a>
+      <a href="#skins">Plot skins</a><a href="#boards">Hoverboards</a><a href="#styles">UI styles</a><a href="#titles">Titles</a>
+      <a href="#race">Race</a><a href="#shop">Shop</a><a href="#codes">Codes</a>
+    </nav>
+    <label class="search" for="q">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l5 5"/></svg>
+      <input id="q" type="search" placeholder="Search the wiki (e.g. inferno, glitch, x10)" autocomplete="off">
+    </label>
+    <button class="theme-btn motion-btn" id="motionBtn" type="button" aria-pressed="true">Animations: ON</button>
+    <button class="theme-btn" id="themeBtn" type="button">Night mode</button>
+  </div>
+</div>
+
+<main>
+<div class="wrap">
+
+<section id="start" data-sec>
+  <h2>Getting started <span class="tag">New players</span></h2>
+  <p class="lead">Tiny City is an idle tycoon: you build a little city that earns money on its own, upgrade it, and keep growing it - even while you watch events or ride a hoverboard.</p>
+  <ol class="steps">
+    <li data-s><b>Claim a plot</b>Walk onto a free plot and claim it. You start with the Farm at level 1 and $50.</li>
+    <li data-s><b>Upgrade the Farm</b>Press the upgrade sign in front of a building. Every level changes the model and earns more money per second.</li>
+    <li data-s><b>Unlock new buildings</b>Your city level is all your building levels added up. New buildings open at city level 3, 6, 10, 15 and onwards.</li>
+    <li data-s><b>Catch the events</b>About twice an hour a city event starts and everyone earns more - from x1.5 on a Sunny Day to x15 during a System Glitch.</li>
+    <li data-s><b>Rebirth</b>When you can afford it, rebirth: you start over, but earn +50% forever and every building gets 2 new levels.</li>
+    <li data-s><b>Collect everything</b>Earn titles (each one boosts your income), spin the Daily Spin, race your hoverboard and unlock skins and styles.</li>
+  </ol>
+</section>
+
+<section id="buildings" data-sec>
+  <h2>Buildings <span class="tag">19</span></h2>
+  <p class="lead">Every building has 10 levels (the Farm has 50), plus 2 more per rebirth and 2 more per ascension. The first 13 are on every plot; the last 6 come with your first ascension.</p>
+  <div class="grid" id="bGallery"></div>
+  <div class="tbl"><table id="bTable">
+    <thead><tr><th>Building</th><th class="num">Opens at city level</th><th class="num">First level costs</th><th class="num">Earns at level 1</th><th>Levels</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <p class="note">Each next level costs about x1.9 more and earns about x1.7 more. Rebirth levels continue the curve (cost x1.62, income x1.25 per level).</p>
+</section>
+
+<section id="farm" data-sec>
+  <h2>The Farm <span class="tag">100 levels</span></h2>
+  <p class="lead">Your first building grows from a seedling plot into a whole city centre in 50 levels, gets 30 more shiny levels from rebirths, and then 20 futuristic ascension levels. Scroll down to watch it level up through all 100 levels while the plot turns around.</p>
+  <div class="grow" id="grow">
+    <div class="grow-stick">
+      <div class="grow-frame" id="growFrame">
+        <div class="lvl" aria-live="polite"><small id="gStage">Farm</small><b id="gLevel">LEVEL 1</b><span id="gTitle">Seedling Plot</span></div>
+        <div class="pop" id="gPop">LEVEL UP!</div>
+        <div class="hint" id="gHint">Scroll to grow</div>
+      </div>
+      <div class="bar-track" aria-hidden="true"><div class="bar-fill" id="gBar"></div></div>
+      <div class="ticks" id="gTicks" role="group" aria-label="Jump to a level"></div>
+    </div>
+  </div>
+  <div class="grid" id="farmGrid"></div>
+</section>
+
+<section id="money" data-sec>
+  <h2>How money works <span class="tag">The formula</span></h2>
+  <p class="lead">Every second, each building pays out its level's income. Then everything is multiplied together. Multipliers multiply each other, so stacking them grows fast.</p>
+  <div class="formula" data-s>
+    <span class="f"><small>Buildings</small><b>Sum of incomes</b></span><span class="op">&times;</span>
+    <span class="f"><small>Passes</small><b>1.5 &middot; 1.5</b></span><span class="op">&times;</span>
+    <span class="f"><small>Rebirths</small><b>1 + 0.5 R</b></span><span class="op">&times;</span>
+    <span class="f"><small>Event</small><b>x1.5 - x50</b></span><span class="op">&times;</span>
+    <span class="f"><small>Titles</small><b>1 + boosts</b></span><span class="op">&times;</span>
+    <span class="f"><small>Skills</small><b>1 + Midas</b></span><span class="op">=</span>
+    <span class="f total"><small>You earn</small><b>$ per second</b></span>
+  </div>
+  <div class="two">
+    <div class="box" data-s>
+      <h3 style="font-size:22px">What each part means</h3>
+      <ul style="margin:8px 0 0;padding-left:20px;font-weight:700;display:grid;gap:4px">
+        <li><b>Buildings:</b> the income of every building at its current level, added up (see the Buildings table).</li>
+        <li><b>Passes:</b> Money Boost x1.5 and VIP x1.5. Both together give x2.25.</li>
+        <li><b>Rebirths:</b> +50% per rebirth, added up. 15 rebirths = x8.5. Ascensions keep it.</li>
+        <li><b>Event:</b> while a city event runs, the whole server earns its multiplier (x1 when nothing is on).</li>
+        <li><b>Titles:</b> the boosts of ALL your titles add up, e.g. +5% +8% +12% = x1.25. CHAMPION gives +2% per rebirth, TRUE CHAMPION +40%.</li>
+        <li><b>Skills:</b> Golden Touch I, II and III add +10%, +15% and +25% (x1.5 with all three).</li>
+      </ul>
+    </div>
+    <div class="box" data-s>
+      <h3 style="font-size:22px">Prices of the next level</h3>
+      <p class="note" style="margin-top:6px">Level n of a small building costs <b>BaseCost &times; 1.9<sup>n-1</sup></b> and earns <b>BaseIncome &times; 1.7<sup>n-1</sup></b>. Rebirth levels continue at cost x1.62 and income x1.25 per level (Farm x1.32 / x1.15). Ascension levels: cost x1.12, income x1.15.</p>
+      <p class="note" style="margin-top:6px">A rebirth costs <b>$400M &times; 2.3<sup>R</sup> &times; 1.055<sup>R(R-1)/2</sup></b>, where R is the rebirths you already have. Money is capped at about $9 Quadrillion.</p>
+    </div>
+  </div>
+
+  <div class="box calc" data-s id="calc">
+    <div class="ctl">
+      <h3 style="font-size:24px">Money calculator</h3>
+      <div>
+        <label for="cBase">Buildings income (before multipliers) <output id="oBase"></output></label>
+        <input id="cBase" type="range" min="0" max="100" step="1" value="40">
+      </div>
+      <div>
+        <label for="cReb">Rebirths <output id="oReb"></output></label>
+        <input id="cReb" type="range" min="0" max="15" step="1" value="3">
+      </div>
+      <div>
+        <label for="cTitle">Title boosts added up <output id="oTitle"></output></label>
+        <input id="cTitle" type="range" min="0" max="900" step="1" value="35">
+      </div>
+      <div>
+        <span class="lab">Passes and skills</span>
+        <div class="toggles">
+          <label><input type="checkbox" id="cMB"> Money Boost x1.5</label>
+          <label><input type="checkbox" id="cVIP"> VIP x1.5</label>
+          <label><input type="checkbox" id="cS1"> Golden Touch I</label>
+          <label><input type="checkbox" id="cS2"> Golden Touch II</label>
+          <label><input type="checkbox" id="cS3"> Golden Touch III</label>
+        </div>
+      </div>
+      <div>
+        <label for="cEv">City event right now</label>
+        <select id="cEv"></select>
+      </div>
+    </div>
+    <div class="result">
+      <span class="note">You earn</span>
+      <div class="bigmoney" id="rOut" aria-live="polite">$0/s</div>
+      <div class="mults" id="rMults"></div>
+      <div class="times">
+        <div>Per minute<b id="rMin">$0</b></div>
+        <div>Per hour<b id="rHour">$0</b></div>
+        <div>Next rebirth in<b id="rReb">-</b></div>
+      </div>
+      <p class="note">Total multiplier: <b id="rTotal">x1</b>. The slider for buildings is logarithmic: from $1/s up to $1T/s.</p>
+    </div>
+  </div>
+</section>
+
+<section id="rebirth" data-sec>
+  <h2>Rebirths <span class="tag">15 max</span></h2>
+  <div class="two">
+    <div class="box" data-s>
+      <h3 style="font-size:24px">How a rebirth works</h3>
+      <p class="note" style="margin-top:8px">Pay the price, and your money and every building go back to the start (Farm level 1). In return you get:</p>
+      <ul style="margin:8px 0 0;padding-left:20px;font-weight:700">
+        <li>+50% income forever (they add up: 2 rebirths = x2.0, 15 = x8.5)</li>
+        <li>+2 levels on every building, in a new colour every rebirth</li>
+        <li>The 15th rebirth is the CHAMPION rebirth: heavenly white-and-gold buildings</li>
+      </ul>
+      <p class="note" style="margin-top:10px">Rough play time without passes: first rebirth ~35 min, rebirths 2-5 ~30 min each, rebirth 9 ~3 h, rebirth 14 ~88 h. All 15 take around 380 hours.</p>
+    </div>
+    <div class="tbl"><table id="rTable">
+      <thead><tr><th>#</th><th>Tier</th><th class="num">Price</th><th class="num">Income</th></tr></thead><tbody></tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="ascension" data-sec>
+  <h2>Ascension <span class="tag">Late game</span></h2>
+  <p class="lead">After all 15 rebirths the ASCENSION button appears. Ascending keeps your 15 rebirths and their x8.5 income, resets your money and buildings, and gives 2 skill points plus 2 cosmic levels on every building.</p>
+  <div class="two">
+    <div class="box" data-s>
+      <h3 style="font-size:24px">To ascend you need</h3>
+      <ul style="margin:8px 0 0;padding-left:20px;font-weight:700">
+        <li>15 rebirths</li>
+        <li>Every building at its very last level (after the first ascension, the 6 new buildings too)</li>
+        <li>The money price and the hours played in the table</li>
+      </ul>
+      <p class="note" style="margin-top:10px">Your first ascension opens the land behind your plot: a starlit grand plaza with 6 new buildings - Movie Studio, Stadium, Theme Park, Airport, Fusion Plant and Space Port.</p>
+    </div>
+    <div class="tbl"><table id="aTable">
+      <thead><tr><th>#</th><th>Cosmic tier</th><th class="num">Price</th><th class="num">Hours played</th></tr></thead><tbody></tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="skills" data-sec>
+  <h2>Skill tree <span class="tag">12 skills</span></h2>
+  <p class="lead">Every ascension gives 2 skill points (20 in total). The whole galaxy costs 17, so you can learn everything. A skill needs the one before it.</p>
+  <div class="two">
+    <figure class="shot" data-s><img src="img/skilltree.jpg" alt="The skill tree galaxy with the MIDAS, ARCHITECT and COMET constellations" loading="lazy" width="1120" height="628"><figcaption>The skill tree is a galaxy you can turn and zoom. Each branch is a constellation of stars.</figcaption></figure>
+    <figure class="shot" data-s><img src="img/skilltree_card.jpg" alt="The Auto-Builder skill card in the skill tree" loading="lazy" width="1120" height="628"><figcaption>Tap a star to see what the skill does, what it needs and to unlock it.</figcaption></figure>
+  </div>
+  <div class="grid" id="skillGrid"></div>
+</section>
+
+<section id="events" data-sec>
+  <h2>City events <span class="tag">Everyone earns more</span></h2>
+  <figure class="shot" style="max-width:760px" data-s><img src="img/hero_fountain.jpg" alt="The fountain statue in the middle of the plaza" loading="lazy" width="1400" height="785"><figcaption>The statue on the plaza fountain. During THE GIANT OWNER event it comes alive and stomps through the city.</figcaption></figure>
+  <p class="lead">After an event there are at least 8 quiet minutes, then a new one usually starts within about 20 minutes - roughly two events an hour. While one is on, the whole server earns the multiplier.</p>
+  <div class="grid wide" id="evGallery"></div>
+  <div class="tbl"><table id="eTable">
+    <thead><tr><th>Event</th><th class="num">Income</th><th class="num">Lasts</th><th class="num">Share of events</th><th>What happens</th></tr></thead><tbody></tbody>
+  </table></div>
+</section>
+
+<section id="spin" data-sec>
+  <h2>Daily spin <span class="tag">Free every 24 h</span></h2>
+  <p class="lead">One free spin a day with the wheel button. Money prizes are minutes of your own income, so they grow with your city. The Lucky Star skill doubles them.</p>
+  <div class="grid" id="spinGrid"></div>
+</section>
+
+<section id="skins" data-sec>
+  <h2>Plot skins <span class="tag">Change your whole plot</span></h2>
+  <p class="lead">Pick a skin in INVENTORY > SKINS. Recolour skins tint your normal city; the big skins replace every building with all-new models that change on every upgrade.</p>
+  <div class="grid wide" id="skinGrid"></div>
+</section>
+
+<section id="boards" data-sec>
+  <h2>Hoverboards <span class="tag">Press F to ride</span></h2>
+  <p class="lead">Every board is just as fast - they only look different. The COMET branch of the skill tree makes all of them faster.</p>
+  <div class="grid wide" id="boardGrid"></div>
+</section>
+
+<section id="styles" data-sec>
+  <h2>UI styles <span class="tag">Change every menu</span></h2>
+  <p class="lead">Styles change the look of every screen. Pick one in INVENTORY > STYLES.</p>
+  <div class="grid" id="styleGrid"></div>
+</section>
+
+<section id="titles" data-sec>
+  <h2>Titles <span class="tag">Income boosts</span></h2>
+  <p class="lead">Titles are earned by playing and show above your head and in chat. Almost every title also adds a permanent income boost, and the boosts add up. Earn all 47 playable ones for the BOUNDLESS title (+75%), which also unlocks the Boundless plot, board and style.</p>
+  <div class="looks" id="looks"></div>
+  <div class="chips" id="rarChips" role="group" aria-label="Filter titles by rarity"></div>
+  <div class="tbl"><table id="tTable">
+    <thead><tr><th>Title</th><th>Rarity</th><th>How to get it</th><th class="num">Boost</th></tr></thead><tbody></tbody>
+  </table></div>
+</section>
+
+<section id="race" data-sec>
+  <h2>Hoverboard race <span class="tag">Turbo Tess</span></h2>
+  <div class="two">
+    <div class="box" data-s>
+      <h3 style="font-size:24px">How to race</h3>
+      <p class="note" style="margin-top:8px">Talk to TURBO TESS, the NPC in the racing helmet next to the main road. Race alone, or against a rival who is sometimes one of your Roblox friends. The course runs through rings along the ring of roads around the city; a lap takes about 1 to 1.5 minutes.</p>
+    </div>
+    <div class="box" data-s>
+      <h3 style="font-size:24px">Rewards</h3>
+      <ul style="margin:8px 0 0;padding-left:20px;font-weight:700">
+        <li>Finish a lap: 30 seconds of your income</li>
+        <li>New personal best: +30 seconds of income</li>
+        <li>Beat the rival: +75 seconds of income</li>
+      </ul>
+      <p class="note" style="margin-top:8px">Racing a lot in 20 minutes slowly lowers the reward (never under 40%); it wears off by itself. Race titles: RACER, QUICK RIDER (under 1:35), SPEED DEMON (under 1:12), ROAD KING (under 1:00) and RIVAL CRUSHER (beat 10 rivals).</p>
+    </div>
+  </div>
+</section>
+
+<section id="shop" data-sec>
+  <h2>Shop <span class="tag">Robux</span></h2>
+  <p class="lead">Passes and items in the SHOP. Buying anything also earns the PAY TO WIN title. Prices are shown in the game.</p>
+  <div class="box" data-s role="note" style="display:flex;gap:12px;align-items:flex-start;border-color:var(--sun);background:var(--card2)">
+    <span aria-hidden="true" style="flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--sun);color:#0b1446;border:2px solid var(--line);font:900 17px var(--body)">!</span>
+    <p style="margin:0"><b>Prices may vary.</b> Robux prices can be different depending on whether a player has <b>Roblox Premium</b> and on their <b>country</b> (Roblox can set different prices per region). The price shown in the game when you buy is always the one you pay.</p>
+  </div>
+  <div class="grid" id="shopGrid"></div>
+  <div class="box" data-s id="serials">
+    <h3 style="font-size:26px">Stormforge serials <span class="rar r-LTD" style="vertical-align:4px">LIMITED MYTHIC</span> <span class="rar r-MYTHIC" style="vertical-align:4px">#1 - #100</span></h3>
+    <p class="note" style="margin-top:8px">The first <b>100</b> Stormforge Bundles that are bought get a serial number. The game's owner has <b>#0</b>. After #100 the bundle still works, just without a number.</p>
+    <ul style="margin:8px 0 0;padding-left:20px;font-weight:700;display:grid;gap:4px">
+      <li><b>Black and white edition:</b> a serial copy turns the plot, the fights, the UI style, the hoverboard and its INVENTORY cards black and white. Prefer the colours? Switch between <b>B&amp;W</b> and <b>COLOUR</b> any time in <b>SETTINGS &gt; SERIAL LOOK</b> - your number stays yours either way.</li>
+      <li><b>Your number on your cosmetics:</b> with the black and white look it floats over the upgrade altar of your main building (the Farm in the middle), sits on a plate on your hoverboard and on your HUD with the style. With the normal colours the number is hidden there. The cards in your INVENTORY always show it.</li>
+      <li><b>A black and white cinematic:</b> when you get a serial, the unlock cutscene plays in black and white and its title card says which number you got.</li>
+      <li><b>Only for real purchases:</b> buying the bundle, or another player buying it as a gift for you. Gifts from the owner panel never come with a number.</li>
+      <li>The SHOP shows how many numbered copies are left.</li>
+      <li>The end card of the cinematic lists what you got - <b>PLOT SKIN</b>, <b>UI STYLE</b>, <b>HOVERBOARD</b> - and your serial number.</li>
+    </ul>
+    <div class="two" style="margin-top:12px">
+      <figure class="shot"><img src="img/serial_cutscene.jpg" alt="The Stormforge cinematic in black and white" loading="lazy" width="1120" height="374"><figcaption>The unlock cinematic of a serial copy, in black and white</figcaption></figure>
+      <figure class="shot"><img src="img/serial_color.jpg" alt="The storm-and-forge upgrade altar with serial number #0 floating over it" loading="lazy" width="900" height="467"><figcaption>The serial number floats over the plot's upgrade altar</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="codes" data-sec>
+  <h2>Codes <span class="tag">Settings > Redeem</span></h2>
+  <div class="box" data-s style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
+    <button class="code" id="codeBtn" type="button" title="Copy the code">TINYCITY</button>
+    <div style="min-width:0;flex:1 1 260px">
+      <b style="font-weight:900">Gives the GALAXY UI style</b>
+      <p class="note">Open SETTINGS, choose REDEEM CODE and type it in. Each code works once per player. Tap the code to copy it.</p>
+    </div>
+  </div>
+</section>
+
+<p class="empty" id="empty">Nothing matches that search. Try a building, event or title name.</p>
+</div>
+</main>
+
+<footer><div class="wrap"><span class="by"><img class="bplogo" src="img/beedowns_logo.png" alt="Beedown's Production" width="600" height="200"><span>Tiny City Wiki - made by Beedown's Production</span></span><a href="#top">Back to top</a></div></footer>
+
+<script>
+(function () {
+  // ---------- data (from the game's own config) ----------
+  var B = [
+    ["Farm","Starts on your plot",0,0,"Seedling Plot to Grand City Center",50],
+    ["Coffee Stand",3,120,4,"Tiny Coffee Cart, Better Counter, Striped Awning, More Equipment, Small Tables, Better Sign, More Seating, Pro Coffee Machine, Improved Storefront, Grand Little Cafe"],
+    ["Hot Dog Stand",6,250,8,"Hot Dog Cart, Umbrella Cart, Bigger Cart, Condiment Station, Standing Tables, Giant Hot Dog Sign, Flame Grill, Food Truck Backdrop, Picnic Lights, Hot Dog Plaza"],
+    ["Beehive",10,500,15,"Wooden Beehive, Two Hives, Flower Patch, Honey Jars, Honey Stand, Bee Garden Fence, Honey Press, Tasting Table, Honey Hut, Golden Honey Shop"],
+    ["Flower Shop",15,900,26,"Flower Buckets, Display Shelves, Pink Awning, Wrapping Counter, Hanging Baskets, Shop Sign, Greenhouse Corner, Flower Arch, Bouquet Cooler, Blooming Boutique"],
+    ["Recycling Center",21,1600,45,"Recycling Bins, Bin Shelter, Sorting Table, Recycling Machine, Conveyor Belt, Bale Press, Collection Truck, Control Booth, Solar Panels, Recycling Center"],
+    ["Fish Pond",28,2800,75,"Small Pond, Rocks & Reeds, Wooden Dock, Fishing Rods, Bigger Pond, Lily Pads, Fish Feeder, Bait Shack, Fishing Area, Fisherman's Paradise"],
+    ["Scooter Rental",36,4800,125,"Scooter Parking, Parking Rack, Charging Posts, Rental Kiosk, More Scooters, Solar Canopy, Charging Station, Helmet Wall, Rental Hut, Scooter Hub"],
+    ["Arcade",45,8000,200,"Tiny Arcade Cabinet, Two Machines, Claw Machine, Cabinet Row, Neon Floor, Prize Counter, Dance Machine, Arcade Walls, Marquee Sign, Mega Arcade"],
+    ["Delivery Depot",55,13000,320,"Delivery Boxes, Pallet Stack, Hand Cart, Sorting Shelf, Cargo Trike, Loading Dock, Scanner Conveyor, Delivery Van, Depot Shed, Delivery Depot"],
+    ["Car Wash",66,21000,500,"Bucket & Hose, Wash Bay, Soap Dispenser, Wash Roof, Spinning Brushes, Water Jets, Foam Station, Blow Dryers, Tunnel Frame, Neon Car Wash"],
+    ["Pizzeria",78,34000,800,"Pizza Cart, Brick Oven, Patio Tables, Order Counter, Pizza Shop, Rooftop Sign, Delivery Scooter, Spinning Pizza, Patio Lights, Neon Pizzeria"],
+    ["City Bank",91,55000,1300,"Piggy Bank, Teller Booth, ATM, Marble Steps, Bank Hall, Pediment Roof, Vault Door, Gold Reserve, Golden Dome, Grand City Bank"],
+    ["Movie Studio",105,90000,2100,"Film Camera, Green Screen, Sound Stage, Director's Chair, Spotlights, Studio Sign, Red Carpet, Big Screen, Hills Sign, Blockbuster Studio",10,true],
+    ["Stadium",125,150000,3400,"Kick-About Pitch, Little Stand, Two Stands, Scoreboard, Floodlights, Stadium Roof, The Teams, Big Screen, Golden Trophy, Packed Arena",10,true],
+    ["Theme Park",145,250000,5500,"Ticket Booth, Carousel, Cotton Candy, Spinning Teacups, Little Coaster, Ferris Wheel, Balloon Seller, Drop Tower, Grand Entrance, Park of Lights",10,true],
+    ["Airport",170,400000,8800,"Grass Runway, Little Hangar, Propeller Plane, Control Tower, Runway Lights, Terminal, Jet Plane, Boarding Bridge, Radar Dish, International Airport",10,true],
+    ["Fusion Plant",200,650000,14000,"Generator, Cooling Tower, Steam Pipes, Control Room, Glowing Core, Tesla Coils, Twin Towers, Energy Rings, Power Lines, Star in a Jar",10,true],
+    ["Space Port",235,1050000,22000,"Launch Pad, Test Rocket, Gantry Tower, Mission Control, Fuel Tanks, Big Rocket, Engines Firing, Satellite, Space Shuttle, Mega Rocket",10,true]
+  ];
+  var FARM = [
+    ["Farm", "1-5", "Seedling Plot, Carrot Patch, Pumpkin Farm, Enchanted Farm, Golden Estate", "#4fbf47"],
+    ["Barnyard", "6-10", "Red Barn, Silo, Cattle Pen, Tractor Yard, Family Farmstead", "#e2574c"],
+    ["Windmill Bakery", "11-15", "Windmill, Bakery Cottage, Brick Oven, Bread Market, Windmill Bakery", "#ffc93a"],
+    ["Greenhouse Market", "16-20", "Greenhouse, Twin Greenhouses, Market Stalls, Market Fountain, Greenhouse Market", "#8ee07d"],
+    ["Village Square", "21-25", "Cobble Square, Village Cottages, Bell Tower, Cottage Row, Village Square", "#d9a066"],
+    ["Town Hall", "26-30", "Town Hall, Clock Tower, Flag Plaza, Town Gardens, Town Center", "#3ea6ec"],
+    ["Main Street", "31-35", "Main Street, Shop Row, Street Lamps, Bus Stop, Busy Main Street", "#ff8fb8"],
+    ["Downtown", "36-40", "Brick Midrise, Office Tower, Traffic Lights, Rooftop Billboards, Downtown", "#b07bff"],
+    ["Business Park", "41-45", "Glass Tower, Twin Towers, Skybridge, Helipad, Business Park", "#5ab8ff"],
+    ["Grand City Center", "46-50", "City Hall Dome, Grand Monument, Ferris Wheel, Fireworks, Grand City Center", "#ffc93a"]
+  ];
+  var RT = [["Bronze","#d68a46"],["Silver","#cdd4e2"],["Gold","#ffcc32"],["Emerald","#32d278"],["Diamond","#78e6ff"],["Ruby","#eb325a"],["Amethyst","#af64ff"],["Rainbow","#ff82dc"]];
+  var AT = [["Nebula","#aa5aff","#ff78dc"],["Stardust","#ffd678","#ffffff"],["Aurora","#46ffbe","#5aa0ff"],["Supernova","#ff6e32","#ffe678"],["Comet","#82dcff","#ffffff"],["Eclipse","#ffc446","#461e6e"],["Pulsar","#32f0ff","#ff3cc8"],["Quasar","#ebf5ff","#6e96ff"],["Andromeda","#ff6eb4","#965aff"],["Infinity","#ffffff","#ffc85a"]];
+  var SK = [
+    ["MIDAS","Golden Touch I","+10% income from everything",1,"-"],["MIDAS","Golden Touch II","+15% more income",1,"Golden Touch I"],
+    ["MIDAS","Golden Touch III","+25% more income",2,"Golden Touch II"],["MIDAS","Lucky Star","Daily Spin money prizes are doubled",1,"Golden Touch I"],
+    ["ARCHITECT","Steady Hands","Hold an upgrade button to keep upgrading",1,"-"],["ARCHITECT","Quick Hands","Buildings are ready for the next upgrade much sooner",1,"Steady Hands"],
+    ["ARCHITECT","Rapid Hands","Holding an upgrade button repeats twice as fast",1,"Quick Hands"],["ARCHITECT","Auto-Builder","Buys your cheapest upgrade by itself every 3 seconds (AUTO button)",3,"Rapid Hands + Golden Touch II"],
+    ["ARCHITECT","Auto-Builder II","The Auto-Builder buys every second",2,"Auto-Builder"],
+    ["COMET","Tailwind I","Hoverboards are 15% faster",1,"-"],["COMET","Tailwind II","Hoverboards are 15% faster again",1,"Tailwind I"],["COMET","Hyperdrive","Hoverboards are 25% faster again",2,"Tailwind II"]
+  ];
+  var BR = {MIDAS: ["Money", "#ffce50"], ARCHITECT: ["Upgrading", "#5adcff"], COMET: ["Hoverboards", "#ff6ec8"]};
+  var EV = [
+    ["Sunny Day",1.5,90,22,"The whole city is in a good mood.","#ffc832"],["Rain Shower",1.5,120,20,"The crops love it - the farm is booming.","#5aa0eb"],
+    ["Snow Day",1.5,90,14,"Hot chocolate sells like crazy.","#c8e6ff"],["Rainbow",2,75,12,"A lucky rainbow over Tiny City.","#ff78c8"],
+    ["Fireworks Night",2,75,9,"The city throws a party.","#ff5aa0"],["Thunderstorm",2.5,75,8,"Lightning powers every building.","#786ec8"],
+    ["Money Rain",3,45,6,"It's raining coins.","#ffd73c"],["Hurricane",3,70,5,"Storm winds blow the money into your city.","#4682aa"],
+    ["Meteor Shower",3,60,5,"Shooting stars - make a wish.","#ff7832"],["Northern Lights",3,75,4,"Magic lights dance over the city.","#50e6c8"],
+    ["Tornado",4,60,3,"A giant twister sweeps cash through the streets.","#968c78"],["Alien Invasion",5,60,2,"The aliens love your city and buy everything.","#5aff78"],
+    ["Heavenly Blessing",10,60,0.5,"The heavens open above Tiny City. About once every 100 hours of play.","#ffe68c"],
+    ["System Glitch",15,60,0.2,"Reality breaks and the money duplicates. The rarest event of all.","#ff28c8"],
+    ["The Giant Owner",50,90,0,"The fountain statue comes alive as a giant owner. Only the owner can start it.","#ffaa3c"]
+  ];
+  var SPIN = [["5 min of income",25,"$2K minimum","#60c850"],["15 min of income",24,"$5K minimum","#46a0f0"],["30 min of income",20,"$10K minimum","#ffa440"],["1 hour of income",15,"$20K minimum","#aa64e6"],["3 hours of income",10,"$60K minimum","#f05078"],["6 hours of income",5,"$120K minimum","#ffcc28"],["OCEAN prize",1,"The Underwater plot, the Ocean style or the Underwater board - one you don't have yet","#28c8dc"]];
+  var SKINS = [
+    ["Noir Plot","EPIC","Recolour","Your whole plot in black and white, like an old movie.","SHOP (Noir Plot)"],
+    ["Sunset Plot","UNCOMMON","Recolour","Your plot in warm golden-hour light.","INVENTORY for $500M"],
+    ["Frost Plot","RARE","Recolour","Snow on the ground and an icy blue chill.","INVENTORY for $10B"],
+    ["Candy Plot","EPIC","Recolour","Sweet pastel colours with pink frosting.","INVENTORY for $200B"],
+    ["Underwater Plot","MYTHIC","New buildings","Your plot under the sea: coral buildings, kelp, bubbles, fish - and a sunken Atlantis with a kraken when you ascend.","DAILY SPIN (the 1% tile)"],
+    ["Inferno Plot","MYTHIC","New buildings","Obsidian and lava: a phoenix, a lava lagoon, a giant dark tower whose burning eye follows every visitor (never the owner), and a brick serpent dragon that flies circles round the plot breathing fire.","SHOP (Inferno Plot or Inferno Bundle)"],
+    ["Blue Inferno Plot","MYTHIC","New buildings","The Inferno plot burning with blue flames: the same giant tower with a cold blue searchlight eye, and a blue serpent dragon circling the plot.","SHOP (Blue Inferno Plot or Bundle)"],
+    ["Boundless Plot","BOUNDLESS","New buildings","A night-sky plot of white marble, rainbow crystals, halos and a star observatory.","Earn the BOUNDLESS title"],
+    ["Code Red Plot","EXCLUSIVE","New buildings","The owner's plot: black glass, red neon, holograms, a server farm and a reactor core.","Only as a gift from the owner"],
+    ["Stormforge Plot","LIMITED MYTHIC","New buildings","KAIRO the Storm Warden vs TORVAN the Forge King really fight on your farm: punches, kicks, lightning spears, magma breakers and beam clashes that get bigger every level. At max level both transcend; at max level + max ascensions they turn godlike (meteor showers, lightning spirals, a storm sky). Every building is split storm vs forge, and the upgrade signs become storm-and-forge altars.","SHOP (Stormforge Bundle only - limited)"]
+  ];
+  var BOARDS = [
+    ["Plank Board","COMMON","A plain wooden plank that hovers.","INVENTORY for $25K"],
+    ["Skateboard Classic","UNCOMMON","Grip tape, red racing stripes and four spinning orange wheels.","INVENTORY for $500K"],
+    ["Neon Racer","RARE","Chasing cyan and pink lights, a spoiler, underglow and speed lines.","INVENTORY for $5B"],
+    ["Golden Royal","LEGENDARY","Solid gold with a velvet carpet, jewels, a floating crown and trailing coins.","INVENTORY for $1T"],
+    ["Noir Board","EPIC","Spinning film reels, rolling film strips and a flickering projector glow.","SHOP"],
+    ["Inferno Board","MYTHIC","Obsidian and lava with dragon horns and fire jets that roar at speed.","SHOP (or Inferno Bundle)"],
+    ["Blue Inferno Board","MYTHIC","The Inferno Board burning with blue fire.","SHOP (or Blue Inferno Bundle)"],
+    ["Underwater Board","MYTHIC","Jellyfish pads, coral, kelp, bubbles and two fish swimming around you.","DAILY SPIN (the 1% tile)"],
+    ["Boundless Board","BOUNDLESS","Marble and gold, rainbow crystals, a halo and stars circling you.","Comes with the Boundless plot"],
+    ["Code Red Board","EXCLUSIVE","A reactor core, a hologram ring and racing circuit lights.","Comes with the Code Red plot"],
+    ["Clown Car","EXCLUSIVE","A tiny honking clown car: polka dots, googly-eye headlights, a big red nose, a daisy on the antenna and rainbow exhaust puffs.","The Clown role in the group or the CLOWN title"],
+    ["Stormforge Board","LIMITED MYTHIC","Half storm, half forge: crackling cyan lightning and a spinning gyro ring at the front, molten iron, gears and fire jets at the back.","SHOP (Stormforge Bundle only - limited)"]
+  ];
+  var STYLES = [
+    ["Classic","COMMON","The normal colourful look.","Everyone has it"],
+    ["Mint","UNCOMMON","Fresh mint green with coral buttons.","INVENTORY for $100M"],
+    ["Peach","RARE","Warm peach and cream with teal buttons.","INVENTORY for $2.5B"],
+    ["Noir","RARE","Every screen black and white, like an old movie.","SHOP (Noir Style)"],
+    ["Bubblegum","EPIC","Sweet pink with sky-blue buttons.","INVENTORY for $50B"],
+    ["Galaxy","EPIC","Deep space with twinkling and shooting stars.","Code TINYCITY"],
+    ["Golden","LEGENDARY","Everything gold with a moving shine.","VIP pass"],
+    ["Ocean","MYTHIC","Sea colours with rising bubbles and waves of light.","DAILY SPIN (the 1% tile)"],
+    ["Inferno","MYTHIC","Charred black panels with flames along the bottom.","SHOP (Inferno Style or Bundle)"],
+    ["Blue Inferno","MYTHIC","Cold black panels with blue flames along the bottom.","SHOP (Blue Inferno Style or Bundle)"],
+    ["Boundless","BOUNDLESS","An aurora of every colour, glowing prism edges and halos of light.","Earn the BOUNDLESS title"],
+    ["Code Red","EXCLUSIVE","Black and red with 1s and 0s raining through every panel.","Only as a gift from the owner"],
+    ["Stormforge","LIMITED MYTHIC","Deep storm-blue panels with a molten glow, cyan and orange corner brackets, a soft light sweep and sparks running along the edges. The upgrade signs on your plot get the same look.","SHOP (Stormforge Bundle only - limited)"]
+  ];
+  var TITLES = [
+    ["NEWCOMER","COMMON","Claim your first plot",0],["POCKET CHANGE","COMMON","Have $10K",3],["REGULAR","COMMON","Join the game 5 times",3],["NEW KID","COMMON","Play for 30 minutes",3],
+    ["VILLAGER","UNCOMMON","Reach city level 30",5],["MILLIONAIRE","UNCOMMON","Have $1M",5],["LOYAL","UNCOMMON","Join the game 20 times",5],["HARD WORKER","UNCOMMON","Play for 2 hours",5],
+    ["SPLASH","UNCOMMON","Jump into the fountain",5],["CHATTERBOX","UNCOMMON","Talk to NPCs 25 times",5],["REBORN","UNCOMMON","Rebirth for the first time",5],["RACER","UNCOMMON","Finish a hoverboard race",5],
+    ["SOCIAL BUTTERFLY","RARE","Talk to NPCs 100 times",8],["MAYOR","RARE","Reach city level 120",8],["BILLIONAIRE","RARE","Have $1B",8],["VETERAN","RARE","Play for 10 hours",8],
+    ["TOURIST","RARE","Step onto all 8 plots",8],["EVENT HUNTER","RARE","See 3 different events",8],["PHOENIX","RARE","Reach 5 rebirths",8],["QUICK RIDER","RARE","Race a lap in under 1:35",8],
+    ["CITY PLANNER","EPIC","Reach city level 170",12],["TRILLIONAIRE","EPIC","Have $1T",12],["SUPERFAN","EPIC","Join the game 100 times",12],["DEDICATED","EPIC","Play for 50 hours",12],
+    ["STORM CHASER","EPIC","See 6 different events",12],["PAY TO WIN","EPIC","Buy anything in the SHOP",0],["STYLISH","EPIC","Own 3 UI styles",12],["DECORATOR","EPIC","Own 3 plot skins",12],
+    ["UNSTOPPABLE","EPIC","Reach 10 rebirths",12],["SKILLED","EPIC","Learn 6 skills in the skill tree",12],["SPEED DEMON","EPIC","Race a lap in under 1:12",12],["RIVAL CRUSHER","EPIC","Beat 10 rivals in the hoverboard race",12],
+    ["TYCOON","LEGENDARY","Reach city level 400",18],["QUADRILLIONAIRE","LEGENDARY","Have $1Qa",18],["CITY LEGEND","LEGENDARY","Play for 150 hours",18],["HEAVEN SENT","LEGENDARY","Be there for the Heavenly Blessing",18],
+    ["MOGUL","LEGENDARY","Have $5Qa",18],["ASCENDED","LEGENDARY","Ascend for the first time",18],["ROAD KING","LEGENDARY","Race a lap in under 1:00",18],["TITLE HOARDER","LEGENDARY","Own 35 titles",18],
+    ["GLITCHED","MYTHIC","Be there when the System Glitch hits",25],["CITY CELEBRITY","MYTHIC","Talk to NPCs 1000 times",25],["IMMORTAL","MYTHIC","Play for 300 hours",25],["GIANT WITNESS","MYTHIC","See the Giant Owner stomp the city",25],
+    ["COLLECTOR","MYTHIC","Own 20 titles",25],["STARGAZER","MYTHIC","Reach 5 ascensions",25],["MASTERMIND","MYTHIC","Learn every skill in the skill tree",25],["INFINITE","MYTHIC","Reach the 10th ascension (Infinity)",25],
+    ["CHAMPION 1","RARE","Have 1 rebirth",2],
+    ["CHAMPION 2","RARE","Have 2 rebirths",4],
+    ["CHAMPION 3","RARE","Have 3 rebirths",6],
+    ["CHAMPION 4","RARE","Have 4 rebirths",8],
+    ["CHAMPION 5","EPIC","Have 5 rebirths",10],
+    ["CHAMPION 6","EPIC","Have 6 rebirths",12],
+    ["CHAMPION 7","EPIC","Have 7 rebirths",14],
+    ["CHAMPION 8","EPIC","Have 8 rebirths",16],
+    ["CHAMPION 9","EPIC","Have 9 rebirths",18],
+    ["CHAMPION 10","LEGENDARY","Have 10 rebirths",20],
+    ["CHAMPION 11","LEGENDARY","Have 11 rebirths",22],
+    ["CHAMPION 12","LEGENDARY","Have 12 rebirths",24],
+    ["CHAMPION 13","LEGENDARY","Have 13 rebirths",26],
+    ["CHAMPION 14","LEGENDARY","Have 14 rebirths",28],
+    ["CHAMPION 15","LEGENDARY","Have 15 rebirths",30],
+    ["TRUE CHAMPION","LEGENDARY","15 rebirths AND every building at its very last level",40],
+    ["VIP","RARE","Own the VIP pass (the pass itself already gives x1.5 money)",0],
+    ["DEV","EXCLUSIVE","The game's developer",0],
+    ["#1 RICHEST","MYTHIC","Be #1 on the money leaderboard above the plaza (while you are there)",0],
+    ["TOP 10 RICHEST","LEGENDARY","Be in the top 10 of the money leaderboard",0],
+    ["TOP 100 RICHEST","EPIC","Be in the top 100 of the money leaderboard",0],
+    ["#1 PLAYTIME","MYTHIC","Be #1 on the playtime leaderboard above the plaza (while you are there)",0],
+    ["TOP 10 PLAYTIME","LEGENDARY","Be in the top 10 of the playtime leaderboard",0],
+    ["TOP 100 PLAYTIME","EPIC","Be in the top 100 of the playtime leaderboard",0],
+    ["GOLDEN TOUCH","SECRET","??? - a secret. Can you find it?",30],["BOUNDLESS","BOUNDLESS","Earn every title you can get by playing",75],
+    ["BEEDOWN'S BLESSING","EXCLUSIVE","A gift from the owner",50],["CLOWN","EXCLUSIVE","Gifted by the owner, or by a troll with the Clown group role",0],["PLAYTESTER","EXCLUSIVE","The TESTER title: given automatically with the Tester role in the group (opens the TESTER panel), or gifted by the owner",0]
+  ];
+  var SHOP = [
+    ["Money Boost","Pass","Everything in your city earns x1.5 money."],
+    ["VIP","Pass","x1.5 money, the VIP chat tag, an aura and the Golden UI style."],
+    ["Stormforge Bundle","Limited bundle","LIMITED MYTHIC: the Stormforge plot, style and hoverboard - never sold on their own - with its own cinematic. The first 100 bought are serialized (see below)."],
+    ["Inferno Bundle","Bundle","The Inferno plot, the Inferno style and the Inferno hoverboard - with its own cinematic."],
+    ["Blue Inferno Bundle","Bundle","The Blue Inferno plot, style and hoverboard - with its own cinematic."],
+    ["Inferno Plot","Item","The fire plot skin on its own."],["Blue Inferno Plot","Item","The blue fire plot skin on its own."],
+    ["Noir Plot","Item","The black-and-white plot skin."],["Noir Style","Item","The black-and-white UI style."],
+    ["Inferno Style","Item","Charred menus with flames."],["Blue Inferno Style","Item","Cold menus with blue flames."],
+    ["Noir, Inferno and Blue Inferno boards","Items","The three shop hoverboards."],["Money packs","Packs","Instant money for your city."]
+  ];
+
+  // ---------- helpers ----------
+  function el(tag, attrs, html) { var e = document.createElement(tag); for (var k in attrs || {}) e.setAttribute(k, attrs[k]); if (html != null) e.innerHTML = html; return e; }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+  function nice(n) { if (n < 100) return Math.floor(n + 0.5); var mag = Math.pow(10, Math.floor(Math.log10(n)) - 1); return Math.round(n / mag) * mag; }
+  function money(n) {
+    var u = [[1e15,"Qa"],[1e12,"T"],[1e9,"B"],[1e6,"M"],[1e3,"K"]];
+    for (var i = 0; i < u.length; i++) if (n >= u[i][0]) { var v = n / u[i][0]; return "$" + (v >= 100 ? Math.round(v) : (Math.round(v * 10) / 10)) + u[i][1]; }
+    return "$" + Math.round(n);
+  }
+  // the in-game rarity looks (TagStyle.RARITY): main colour, shine colour, shine speed
+  var RL = {
+    COMMON: ["#8c8c8c", "#8c8c8c", 0, "Plain grey, does not move", 3], UNCOMMON: ["#549654", "#82be82", 0, "Dull green, plain", 5],
+    RARE: ["#2468d2", "#96c8ff", 0, "Blue, plain", 8], EPIC: ["#872dd2", "#ebafff", 1.25, "Purple with a moving shine", 12],
+    LEGENDARY: ["#cd8c00", "#ffffff", 1.5, "Gold with a white shine", 18], MYTHIC: ["#c81446", "#ffaad2", 1.7, "Crimson, the fastest shine", 25],
+    EXCLUSIVE: ["#000000", "#ffffff", 1.8, "Black, only given by the owner", 0], SECRET: ["#341060", "#ffce40", 2, "Deep violet with a gold shine", 30],
+    BOUNDLESS: ["#ffffff", "#aadcff", 2.2, "White, two icy shines and a breathing glow", 75]
+  };
+  // titles with their own colours in the game
+  var TC = {"PAY TO WIN": ["#188c3c", "#ffe150"], "STYLISH": ["#dc46aa", "#ffbeeb"], "DECORATOR": ["#e66e1e", "#ffd28c"], "PHOENIX": ["#dc5014", "#ffc850"],
+    "ASCENDED": ["#783cdc", "#dcbeff"], "SPEED DEMON": ["#dc2828", "#ffc850"], "RIVAL CRUSHER": ["#f07814", "#ffe678"],
+    "BEEDOWN'S BLESSING": ["#000000", "#ffd600"], "CLOWN": ["#dc1e28", "#ffffff"], "PLAYTESTER": ["#007080", "#8cffdc"],
+    "TRUE CHAMPION": ["#cd8c00", "#ffffff"], "VIP": ["#e2620a", "#ffe85a"], "DEV": ["#000000", "#ff1e1e"],
+    "#1 RICHEST": ["#cc8400", "#ffe25a"], "TOP 10 RICHEST": ["#0a925c", "#6ef0aa"], "TOP 100 RICHEST": ["#348c40", "#96e28c"],
+    "#1 PLAYTIME": ["#6e3ce6", "#c8aaff"], "TOP 10 PLAYTIME": ["#0080d6", "#78dcff"], "TOP 100 PLAYTIME": ["#3460aa", "#96c4fa"],
+    "CHAMPION 1": ["#925e30", "#ffffff"], "CHAMPION 2": ["#8b909a", "#ffffff"], "CHAMPION 3": ["#ad8b22", "#ffffff"], "CHAMPION 4": ["#228f52", "#ffffff"], "CHAMPION 5": ["#529cad", "#ffffff"], "CHAMPION 6": ["#a0223d", "#ffffff"], "CHAMPION 7": ["#7744ad", "#ffffff"], "CHAMPION 8": ["#ad5896", "#ffffff"], "CHAMPION 9": ["#925e30", "#ffffff"], "CHAMPION 10": ["#8b909a", "#ffffff"], "CHAMPION 11": ["#ad8b22", "#ffffff"], "CHAMPION 12": ["#228f52", "#ffffff"], "CHAMPION 13": ["#529cad", "#ffffff"], "CHAMPION 14": ["#a0223d", "#ffffff"], "CHAMPION 15": ["#cd8c00", "#ffffff"]};
+  function shineVars(m, b, speed) { return "--m:" + m + ";--b:" + b + ";--d:" + (2.2 / speed).toFixed(2) + "s"; }
+  function rar(r) {
+    // LIMITED MYTHIC (the Stormforge items): never sold on their own - a black + white LIMITED tag on the mythic badge
+    if (r === "LIMITED MYTHIC") return '<span class="rar r-LTD">LIMITED</span>' + rar("MYTHIC");
+    var l = RL[r];
+    if (l && l[2] > 0 && r !== "BOUNDLESS") return '<span class="rar r-' + r + ' shine" style="' + shineVars(l[0], l[1], l[2]) + '">' + esc(r) + '</span>';
+    return '<span class="rar r-' + r + '">' + esc(r) + '</span>';
+  }
+  function plate(name, r) {
+    var l = RL[r] || RL.COMMON, c = TC[name] || [l[0], l[1]];
+    if (r === "BOUNDLESS") return '<span class="plate lit" style="--d:1s"><span class="tt prism">' + esc(name) + '</span></span>';
+    if (l[2] > 0) return '<span class="plate lit" style="' + shineVars(c[0], c[1], l[2]) + '"><span class="tt shine" style="' + shineVars(c[0], c[1], l[2]) + '">' + esc(name) + '</span></span>';
+    return '<span class="plate"><span class="tt" style="--m:' + c[0] + '">' + esc(name) + '</span></span>';
+  }
+
+  // ---------- buildings ----------
+  var tb = document.querySelector("#bTable tbody");
+  B.forEach(function (b) {
+    var levels = "";
+    if (b[2] > 0) {
+      var names = b[4].split(", ");
+      levels = '<details class="lv"><summary>' + names.length + ' levels</summary><ol>' + names.map(function (n, i) {
+        return "<li>" + esc(n) + " - <span>" + money(nice(b[2] * Math.pow(1.9, i))) + " for " + money(nice(b[3] * Math.pow(1.7, i))) + "/s</span></li>";
+      }).join("") + "</ol></details>";
+    } else levels = '<a href="#farm" style="font-weight:800;color:var(--water)">50 levels, see The Farm</a>';
+    var tr = el("tr", {"data-s": ""});
+    tr.innerHTML = "<td><b>" + esc(b[0]) + "</b>" + (b[6] ? ' <span class="pill">Ascension</span>' : "") + "</td><td class='num'>" + esc(b[1]) +
+      "</td><td class='num'>" + (b[2] ? money(b[2]) : "Free") + "</td><td class='num'>" + (b[3] ? money(b[3]) + "/s" : "-") + "</td><td>" + levels + "</td>";
+    tb.appendChild(tr);
+  });
+
+  // ---------- building photos (level 10, from the game) ----------
+  var PHOTO = {"Coffee Stand":"CoffeeStand","Hot Dog Stand":"HotDogStand","Beehive":"Beehive","Flower Shop":"FlowerShop","Recycling Center":"RecyclingCenter","Fish Pond":"FishPond","Scooter Rental":"ScooterRental","Arcade":"Arcade","Delivery Depot":"DeliveryDepot","Car Wash":"CarWash","Pizzeria":"Pizzeria","City Bank":"Bank"};
+  var ASC = {"Movie Studio":"MovieStudio","Stadium":"Stadium","Theme Park":"ThemePark","Airport":"Airport","Fusion Plant":"FusionPlant","Space Port":"SpacePort"};
+  function photoOf(name) { return PHOTO[name] ? "img/b_" + PHOTO[name] + ".jpg" : (ASC[name] ? "img/asc_" + ASC[name] + ".jpg" : null); }
+  var bg = document.getElementById("bGallery");
+  B.forEach(function (b) {
+    var src = photoOf(b[0]); if (!src) return;
+    var last = b[4].split(", ")[9];
+    bg.appendChild(el("div", {"class": "card photo", "data-s": ""}, '<img src="' + src + '" alt="' + esc(b[0]) + ' at level 10" loading="lazy" width="640" height="480"><div class="in"><div class="kv"><span class="pill">Level 10</span>' + (ASC[b[0]] ? '<span class="pill mult">Ascension</span>' : '<span class="pill">Opens at city level ' + b[1] + '</span>') + '</div><h3>' + esc(b[0]) + '</h3><p>' + esc(last) + '</p></div>'));
+  });
+  document.querySelectorAll("#bTable tbody tr").forEach(function (tr, i) {
+    var src = photoOf(B[i][0]);
+    if (src) tr.firstElementChild.insertAdjacentHTML("afterbegin", '<img class="thumb" src="' + src + '" alt="" loading="lazy">');
+  });
+
+  // ---------- the Farm growing while you scroll ----------
+  var FT = ["Seedling Plot","Carrot Patch","Pumpkin Farm","Enchanted Farm","Golden Estate","Red Barn","Silo","Cattle Pen","Tractor Yard","Family Farmstead","Windmill","Bakery Cottage","Brick Oven","Bread Market","Windmill Bakery","Greenhouse","Twin Greenhouses","Market Stalls","Market Fountain","Greenhouse Market","Cobble Square","Village Cottages","Bell Tower","Cottage Row","Village Square","Town Hall","Clock Tower","Flag Plaza","Town Gardens","Town Center","Main Street","Shop Row","Street Lamps","Bus Stop","Busy Main Street","Brick Midrise","Office Tower","Traffic Lights","Rooftop Billboards","Downtown","Glass Tower","Twin Towers","Skybridge","Helipad","Business Park","City Hall Dome","Grand Monument","Ferris Wheel","Fireworks","Grand City Center"];
+  var TIERS = ["Bronze","Silver","Gold","Emerald","Diamond","Ruby","Amethyst","Rainbow"];
+  function farmInfo(L) {
+    if (L <= 50) return {stage: FARM[Math.ceil(L / 5) - 1][0], title: FT[L - 1]};
+    if (L > 80) { var k = L - 80, n = Math.ceil(k / 2); return {stage: "Ascension " + n + " (" + AT[n - 1][0] + ") level", title: AT[n - 1][0] + " Future Farm" + (k % 2 === 0 ? " II" : "")}; }
+    var e = L - 50, r = Math.ceil(e / 2);
+    var tier = r >= 15 ? "Heavenly" : TIERS[(r - 1) % 8];
+    return {stage: "Rebirth " + r + (r === 15 ? " (CHAMPION)" : "") + " level", title: tier + " Farm" + (e % 2 === 0 ? " II" : "")};
+  }
+  // every level, 1 to 80 - and the camera turns a little further round the Farm with every level,
+  // so scrolling spins the plot as it grows (one full turn from level 1 to level 100)
+  var LV = []; for (var q = 1; q <= 100; q++) LV.push(q);
+  var MARKS = [1,5,10,15,20,25,30,35,40,45,50,60,70,80,90,100];
+  var frame = document.getElementById("growFrame"), imgs = [];
+  function src(L) { return "img/farm/f" + (L < 10 ? "0" : "") + L + ".jpg"; }
+  LV.forEach(function (L, i) {
+    var im = el("img", {alt: "The Farm at level " + L, width: "1120", height: "628", decoding: "async"});
+    if (i < 3) im.src = src(L);
+    frame.insertBefore(im, frame.firstChild);
+    imgs.push(im);
+  });
+  function want(i) { if (i >= 0 && i < imgs.length && !imgs[i].getAttribute("src")) imgs[i].src = src(LV[i]); }
+  // (once the section is near, the rest load quietly in the background, a few at a time)
+  var fed = false;
+  function feedAll() {
+    if (fed) return; fed = true;
+    var n = 0;
+    (function next() { var batch = 0; while (n < imgs.length && batch < 6) { if (!imgs[n].getAttribute("src")) { want(n); batch++; } n++; } if (n < imgs.length) setTimeout(next, 250); })();
+  }
+  var ticks = document.getElementById("gTicks"), tickBtns = [];
+  var grow = document.getElementById("grow");
+  function jump(i) {
+    var top = grow.getBoundingClientRect().top + window.scrollY;
+    var span = grow.offsetHeight - window.innerHeight;
+    window.scrollTo({top: top + span * ((i + 0.5) / LV.length), behavior: document.documentElement.classList.contains("calm") ? "auto" : "smooth"});
+  }
+  MARKS.forEach(function (L) {
+    var b = el("button", {"type": "button", "aria-label": "Show level " + L}, String(L));
+    b.addEventListener("click", function () { jump(L - 1); });
+    ticks.appendChild(b); tickBtns.push(b);
+  });
+  var cur = -1, pop = document.getElementById("gPop"), hint = document.getElementById("gHint"), lastStage = "";
+  var target = 0;
+  function ready(im) { return im.complete && im.naturalWidth > 0; }
+  imgs.forEach(function (im, k) { im.addEventListener("load", function () { if (k === target && cur !== target) show(target); }); });
+  function show(i) {
+    target = i;
+    for (var k = i - 2; k <= i + 4; k++) want(k);
+    // (a picture that is not loaded yet: show the nearest loaded level below it until it is)
+    var j = i;
+    while (j > 0 && !ready(imgs[j])) j--;
+    if (!ready(imgs[j])) j = i;
+    i = j;
+    if (i === cur) return;
+    var up = i > cur && cur !== -1;
+    cur = i;
+    imgs.forEach(function (im, k) { im.classList.toggle("on", k === i); });
+    var L = LV[i], info = farmInfo(L), m = 0;
+    MARKS.forEach(function (x, k) { if (L >= x) m = k; });
+    tickBtns.forEach(function (b, k) { b.setAttribute("aria-current", k === m ? "true" : "false"); });
+    document.getElementById("gLevel").textContent = "LEVEL " + L;
+    document.getElementById("gStage").textContent = info.stage;
+    document.getElementById("gTitle").textContent = info.title;
+    // (LEVEL UP! pops when a new stage starts, not on every single level)
+    if (up && info.stage !== lastStage) { pop.classList.remove("go"); void pop.offsetWidth; pop.classList.add("go"); }
+    lastStage = info.stage;
+  }
+  var barEl = document.querySelector(".bar");
+  function barH() { document.documentElement.style.setProperty("--barH", barEl.offsetHeight + "px"); }
+  barH(); window.addEventListener("resize", barH);
+  var ticking = false;
+  function onScroll() {
+    ticking = false;
+    var r = grow.getBoundingClientRect();
+    var span = grow.offsetHeight - window.innerHeight;
+    var p = span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : 0;
+    document.getElementById("gBar").style.width = (p * 100) + "%";
+    hint.style.opacity = p > 0.02 ? "0" : "1";
+    if (r.top < window.innerHeight * 2.5) feedAll();
+    show(Math.min(LV.length - 1, Math.floor(p * LV.length)));
+  }
+  window.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, {passive: true});
+  window.addEventListener("resize", onScroll);
+  onScroll();
+
+  // ---------- farm ----------
+  var fg = document.getElementById("farmGrid");
+  FARM.forEach(function (f) {
+    fg.appendChild(el("div", {"class": "card", "data-s": ""}, '<div class="kv"><span class="pill"><span class="swatch" style="background:' + f[3] + '"></span>Levels ' + f[1] + '</span></div><h3>' + esc(f[0]) + '</h3><p>' + esc(f[2]) + '</p>'));
+  });
+
+  // ---------- rebirths ----------
+  var rb = document.querySelector("#rTable tbody");
+  for (var r = 0; r < 15; r++) {
+    var c = 4e8 * Math.pow(2.3, r) * Math.pow(1.055, r * (r - 1) / 2);
+    var mag = Math.pow(10, Math.floor(Math.log10(c)) - 1); c = Math.round(c / mag) * mag;
+    var tier = r === 14 ? ["Heavenly (CHAMPION)", "#ffe28c"] : RT[r % RT.length];
+    var tr = el("tr", {"data-s": ""});
+    tr.innerHTML = "<td><b>" + (r + 1) + "</b></td><td><span class='swatch' style='background:" + tier[1] + "'></span>" + tier[0] + "</td><td class='num'>" + money(c) + "</td><td class='num'><span class='pill mult'>x" + (1 + 0.5 * (r + 1)).toFixed(1) + "</span></td>";
+    rb.appendChild(tr);
+  }
+
+  // ---------- ascension ----------
+  var ab = document.querySelector("#aTable tbody");
+  AT.forEach(function (t, i) {
+    var tr = el("tr", {"data-s": ""});
+    tr.innerHTML = "<td><b>" + (i + 1) + "</b></td><td><span class='swatch' style='background:linear-gradient(135deg," + t[1] + "," + t[2] + ")'></span>" + t[0] + "</td><td class='num'>" + money(nice(1.5e15 * Math.pow(1.2, i))) + "</td><td class='num'>" + (400 + 40 * i) + " h</td>";
+    ab.appendChild(tr);
+  });
+
+  // ---------- skills ----------
+  var sg = document.getElementById("skillGrid");
+  SK.forEach(function (s) {
+    var br = BR[s[0]];
+    sg.appendChild(el("div", {"class": "card", "data-s": ""}, '<div class="kv"><span class="pill"><span class="swatch" style="background:' + br[1] + '"></span>' + s[0] + ' - ' + br[0] + '</span><span class="pill">' + s[3] + ' point' + (s[3] > 1 ? "s" : "") + '</span></div><h3>' + esc(s[1]) + '</h3><p>' + esc(s[2]) + '</p><p class="note">Needs: ' + esc(s[4]) + '</p>'));
+  });
+
+  // ---------- events ----------
+  var eb = document.querySelector("#eTable tbody");
+  var tot = EV.reduce(function (a, e) { return a + e[3]; }, 0);
+  EV.forEach(function (e) {
+    var share = e[3] === 0 ? "Owner only" : (e[3] / tot * 100 < 1 ? (e[3] / tot * 100).toFixed(1) : Math.round(e[3] / tot * 100)) + "%";
+    var tr = el("tr", {"data-s": ""});
+    tr.innerHTML = "<td><span class='swatch' style='background:" + e[5] + "'></span><b>" + esc(e[0]) + "</b></td><td class='num'><span class='pill mult'>x" + e[1] + "</span></td><td class='num'>" + e[2] + " s</td><td class='num'>" + share + "</td><td>" + esc(e[4]) + "</td>";
+    eb.appendChild(tr);
+  });
+
+  var EVID = {"Sunny Day":"Sunny","Rain Shower":"Rain","Snow Day":"Snow","Rainbow":"Rainbow","Fireworks Night":"Fireworks","Thunderstorm":"Thunder","Money Rain":"MoneyRain","Hurricane":"Hurricane","Meteor Shower":"Meteors","Northern Lights":"Aurora","Tornado":"Tornado","Alien Invasion":"Aliens","Heavenly Blessing":"Heavenly","System Glitch":"Glitch","The Giant Owner":"Giant"};
+  var evg = document.getElementById("evGallery");
+  EV.forEach(function (e) {
+    evg.appendChild(el("div", {"class": "card photo", "data-s": ""}, '<img src="img/ev_' + EVID[e[0]] + '.jpg" alt="The ' + esc(e[0]) + ' event in the city" loading="lazy" width="960" height="538" style="aspect-ratio:16/9"><div class="in"><div class="kv"><span class="pill mult">x' + e[1] + ' income</span><span class="pill">' + e[2] + ' s</span></div><h3>' + esc(e[0]) + '</h3><p>' + esc(e[4]) + '</p></div>'));
+  });
+
+  // ---------- spin ----------
+  var spg = document.getElementById("spinGrid");
+  SPIN.forEach(function (s) {
+    spg.appendChild(el("div", {"class": "card", "data-s": ""}, '<div class="kv"><span class="pill"><span class="swatch" style="background:' + s[3] + '"></span>' + s[1] + '% chance</span></div><h3>' + esc(s[0]) + '</h3><p>' + esc(s[2]) + '</p>'));
+  });
+
+  // ---------- cosmetics ----------
+  var SKINIMG = {"Noir Plot":"skin_NoirPlot","Sunset Plot":"skin_sunset","Frost Plot":"skin_frost","Candy Plot":"skin_candy","Underwater Plot":"skin_Underwater","Inferno Plot":"skin_Inferno","Blue Inferno Plot":"skin_BlueInferno","Boundless Plot":"skin_Boundless","Code Red Plot":"skin_CodeRed","Stormforge Plot":"skin_DomainClash"};
+  var BOARDIMG = {"Plank Board":"PlankBoard","Skateboard Classic":"SkateBoard","Neon Racer":"NeonBoard","Golden Royal":"RoyalBoard","Noir Board":"NoirBoard","Inferno Board":"InfernoBoard","Blue Inferno Board":"BlueInfernoBoard","Underwater Board":"UnderwaterBoard","Boundless Board":"BoundlessBoard","Code Red Board":"CodeRedBoard","Clown Car":"ClownCarBoard","Stormforge Board":"DomainBoard"};
+  var STYLEIMG = {"Classic":"classic","Mint":"mint","Peach":"peach","Noir":"noir","Bubblegum":"bubblegum","Galaxy":"galaxy","Golden":"gold","Ocean":"ocean","Inferno":"inferno","Blue Inferno":"blueinferno","Boundless":"boundless","Code Red":"codered","Stormforge":"domain"};
+  function imgFor(kind, name) {
+    if (kind === "skin" && SKINIMG[name]) return ["img/" + SKINIMG[name] + ".jpg", "4 / 3", "The Farm at level 50 in the " + name];
+    if (!kind && BOARDIMG[name]) return ["img/board_" + BOARDIMG[name] + ".jpg", "16 / 9", "The " + name];
+    if (kind === "style" && STYLEIMG[name]) return ["img/st_" + STYLEIMG[name] + ".jpg", "4 / 3", "The shop in the " + name + " style"];
+    return null;
+  }
+  function cards(id, list, kind) {
+    var g = document.getElementById(id);
+    list.forEach(function (x) {
+      var im = imgFor(kind, x[0]);
+      if (im) {
+        var extra2 = kind === "skin" ? '<span class="pill">' + esc(x[2]) + '</span>' : "";
+        var desc2 = kind === "skin" ? x[3] : x[2];
+        var how2 = kind === "skin" ? x[4] : x[3];
+        g.appendChild(el("div", {"class": "card photo", "data-s": ""}, '<img src="' + im[0] + '" alt="' + esc(im[2]) + '" loading="lazy" style="aspect-ratio:' + im[1] + '"><div class="in"><div class="kv">' + rar(x[1]) + extra2 + '</div><h3>' + esc(x[0]) + '</h3><p>' + esc(desc2) + '</p><div class="kv"><span class="pill money">' + esc(how2) + '</span></div></div>'));
+        return;
+      }
+      var extra = kind === "skin" ? '<span class="pill">' + esc(x[2]) + '</span>' : "";
+      var desc = kind === "skin" ? x[3] : x[2];
+      var how = kind === "skin" ? x[4] : x[3];
+      g.appendChild(el("div", {"class": "card", "data-s": ""}, '<div class="kv">' + rar(x[1]) + extra + '</div><h3>' + esc(x[0]) + '</h3><p>' + esc(desc) + '</p><div class="kv"><span class="pill money">' + esc(how) + '</span></div>'));
+    });
+  }
+  cards("skinGrid", SKINS, "skin"); cards("boardGrid", BOARDS); cards("styleGrid", STYLES, "style");
+
+  // ---------- titles ----------
+  var ORDER = ["COMMON","UNCOMMON","RARE","EPIC","LEGENDARY","MYTHIC","SECRET","BOUNDLESS","EXCLUSIVE"];
+  var tt = document.querySelector("#tTable tbody");
+  TITLES.sort(function (a, b) { return ORDER.indexOf(a[1]) - ORDER.indexOf(b[1]); }).forEach(function (t) {
+    var tr = el("tr", {"data-s": "", "data-rar": t[1]});
+    tr.innerHTML = "<td>" + plate(t[0], t[1]) + "</td><td>" + rar(t[1]) + "</td><td>" + esc(t[2]) + "</td><td class='num'>" + (t[3] ? "<span class='pill money'>+" + t[3] + "%</span>" : "-") + "</td>";
+    tt.appendChild(tr);
+  });
+  var looks = document.getElementById("looks");
+  ORDER.forEach(function (r) {
+    var l = RL[r];
+    looks.appendChild(el("div", {"class": "look", "data-s": ""}, plate(r, r) + rar(r) + '<p>' + esc(l[3]) + (l[4] ? ' - +' + l[4] + '% each' : '') + '</p>'));
+  });
+  var chips = document.getElementById("rarChips"), rarFilter = "ALL";
+  ["ALL"].concat(ORDER).forEach(function (r) {
+    var b = el("button", {"class": "chip", "type": "button", "aria-pressed": r === "ALL" ? "true" : "false"}, r === "ALL" ? "All rarities" : r.charAt(0) + r.slice(1).toLowerCase());
+    b.addEventListener("click", function () {
+      rarFilter = r;
+      chips.querySelectorAll(".chip").forEach(function (c) { c.setAttribute("aria-pressed", c === b ? "true" : "false"); });
+      applySearch();
+    });
+    chips.appendChild(b);
+  });
+
+  // ---------- shop ----------
+  var shg = document.getElementById("shopGrid");
+  SHOP.forEach(function (s) {
+    shg.appendChild(el("div", {"class": "card", "data-s": ""}, '<div class="kv"><span class="pill mult">' + esc(s[1]) + '</span></div><h3>' + esc(s[0]) + '</h3><p>' + esc(s[2]) + '</p>'));
+  });
+
+  // ---------- money calculator ----------
+  (function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var ev = $("cEv");
+    ev.appendChild(el("option", {value: "1"}, "No event (x1)"));
+    EV.forEach(function (e) { ev.appendChild(el("option", {value: String(e[1])}, esc(e[0]) + " (x" + e[1] + ")")); });
+    function baseVal() { return Math.round(Math.pow(10, $("cBase").value / 100 * 12)); }
+    function full(n) { return n < 1e3 ? "$" + (Math.round(n * 10) / 10) : money(n); }
+    function dur(sec) {
+      if (!isFinite(sec)) return "-";
+      if (sec < 60) return Math.ceil(sec) + " s";
+      if (sec < 3600) return Math.round(sec / 60) + " min";
+      if (sec < 86400 * 2) return (Math.round(sec / 360) / 10) + " h";
+      return Math.round(sec / 86400) + " days";
+    }
+    var shown = 0, anim = null;
+    function animateTo(v) {
+      var from = shown, t0 = performance.now();
+      cancelAnimationFrame(anim);
+      (function step(t) {
+        var k = Math.min(1, (t - t0) / 500); k = 1 - Math.pow(1 - k, 3);
+        shown = from + (v - from) * k;
+        $("rOut").textContent = full(shown) + "/s";
+        if (k < 1) anim = requestAnimationFrame(step);
+      })(t0);
+    }
+    var last = 0;
+    function calc(burst) {
+      var base = baseVal(), R = +$("cReb").value, tb = +$("cTitle").value / 100;
+      var pass = ($("cMB").checked ? 1.5 : 1) * ($("cVIP").checked ? 1.5 : 1);
+      var reb = 1 + 0.5 * R, evm = +ev.value, ttl = 1 + tb;
+      var sk = 1 + ($("cS1").checked ? .10 : 0) + ($("cS2").checked ? .15 : 0) + ($("cS3").checked ? .25 : 0);
+      var tot = pass * reb * evm * ttl * sk, out = base * tot;
+      $("oBase").textContent = full(base) + "/s"; $("oReb").textContent = R + " (x" + reb + ")"; $("oTitle").textContent = "+" + Math.round(tb * 100) + "%";
+      var rows = [["Buildings", full(base) + "/s", 0], ["Passes", "x" + pass, pass], ["Rebirths", "x" + reb, reb], ["Event", "x" + evm, evm], ["Titles", "x" + ttl.toFixed(2), ttl], ["Skills", "x" + sk.toFixed(2), sk]];
+      $("rMults").innerHTML = rows.slice(1).map(function (r) {
+        return '<div class="mrow"><span>' + r[0] + '</span><span class="t"><i style="width:' + Math.min(100, Math.log(r[2]) / Math.log(50) * 100) + '%"></i></span><span>' + r[1] + '</span></div>';
+      }).join("");
+      $("rTotal").textContent = "x" + (tot < 100 ? tot.toFixed(2) : Math.round(tot));
+      $("rMin").textContent = full(out * 60); $("rHour").textContent = full(out * 3600);
+      if (R >= 15) $("rReb").textContent = "All done";
+      else { var c = 4e8 * Math.pow(2.3, R) * Math.pow(1.055, R * (R - 1) / 2); $("rReb").textContent = out > 0 ? dur(c / out) : "-"; }
+      animateTo(out);
+      if (burst && out > last) coinBurst();
+      last = out;
+    }
+    function coinBurst() {
+      if (document.documentElement.classList.contains("calm")) return;
+      var r = $("rOut").getBoundingClientRect();
+      for (var i = 0; i < 9; i++) {
+        var c = el("span", {"class": "coin", "aria-hidden": "true"}, "$");
+        var x = r.left + Math.random() * Math.min(r.width, 260), y = r.top + r.height / 2;
+        c.style.left = x + "px"; c.style.top = y + "px";
+        document.body.appendChild(c);
+        var dx = (Math.random() - .5) * 160, up = 60 + Math.random() * 90;
+        c.animate([{transform: "translate(0,0) scale(.6)", opacity: 1}, {transform: "translate(" + dx / 2 + "px," + (-up) + "px) scale(1.1)", opacity: 1, offset: .45}, {transform: "translate(" + dx + "px,40px) scale(.8)", opacity: 0}], {duration: 900 + Math.random() * 300, easing: "cubic-bezier(.2,.7,.4,1)"}).onfinish = function () { this.effect.target.remove(); };
+      }
+    }
+    ["cBase", "cReb", "cTitle", "cMB", "cVIP", "cS1", "cS2", "cS3", "cEv"].forEach(function (id) {
+      $(id).addEventListener("input", function () { calc(id !== "cBase" && id !== "cTitle"); });
+      $(id).addEventListener("change", function () { calc(true); });
+    });
+    calc(false);
+  })();
+
+  // ---------- animations: falling coins, twinkling windows, sections that pop in, sparkles on titles ----------
+  (function () {
+    var still = document.documentElement.classList.contains("calm");
+    var sky = document.getElementById("coinsSky");
+    for (var i = 0; i < 14; i++) {
+      var c = document.createElement("span");
+      c.style.left = (Math.random() * 100) + "%";
+      c.style.animationDuration = (5 + Math.random() * 6) + "s";
+      c.style.animationDelay = (-Math.random() * 10) + "s";
+      c.style.transform = "scale(" + (0.6 + Math.random() * 0.6) + ")";
+      if (still) c.style.top = (Math.random() * 80) + "%";
+      sky.appendChild(c);
+    }
+    document.querySelectorAll(".wins rect").forEach(function (r, i) { r.classList.add("win"); r.style.animationDelay = (-(i * 0.37) % 3) + "s"; });
+    // count the hero numbers up
+    document.querySelectorAll(".hero .facts li").forEach(function (li) {
+      var m = li.textContent.match(/^(\d+)(.*)$/); if (!m || still) return;
+      var n = +m[1], t0 = performance.now();
+      (function step(t) { var k = Math.min(1, (t - t0) / 1200); li.textContent = Math.round(n * (1 - Math.pow(1 - k, 3))) + m[2]; if (k < 1) requestAnimationFrame(step); })(t0);
+    });
+    if (!still && "IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          var kids = e.target.querySelectorAll(":scope > .grid > .card, :scope > .looks > .look, :scope > .steps > li, :scope > .box, :scope > .two > .box, :scope > .formula .f");
+          kids.forEach(function (k, i) { k.style.animationDelay = Math.min(i * 0.05, 0.6) + "s"; k.classList.add("reveal-in"); });
+          io.unobserve(e.target);
+        });
+      }, {rootMargin: "0px 0px -10% 0px"});
+      document.querySelectorAll("[data-sec]").forEach(function (s) { io.observe(s); });
+    }
+    // sparkles over shiny titles when you hover them
+    document.addEventListener("pointerover", function (e) {
+      var p = e.target.closest && e.target.closest(".plate.lit, .rar.shine, .r-BOUNDLESS");
+      if (!p || still || p._sp) return;
+      p._sp = true; setTimeout(function () { p._sp = false; }, 600);
+      var r = p.getBoundingClientRect();
+      for (var i = 0; i < 4; i++) {
+        var s = document.createElement("span"); s.className = "sparkle";
+        s.style.position = "fixed"; s.style.zIndex = 40;
+        s.style.left = (r.left + Math.random() * r.width - 5) + "px"; s.style.top = (r.top + Math.random() * r.height - 5) + "px";
+        s.style.background = i % 2 ? "#ffd84a" : "#ffffff"; s.style.animationDelay = (i * 0.08) + "s";
+        document.body.appendChild(s); setTimeout(function (x) { x.remove(); }.bind(null, s), 1100);
+      }
+    });
+  })();
+
+  // ---------- search ----------
+  var q = document.getElementById("q");
+  function applySearch() {
+    var term = q.value.trim().toLowerCase();
+    var anyShown = false;
+    document.querySelectorAll("[data-sec]").forEach(function (sec) {
+      var items = sec.querySelectorAll("[data-s]");
+      var shown = 0;
+      var secHit = term && sec.querySelector("h2").textContent.toLowerCase().indexOf(term) >= 0;
+      items.forEach(function (it) {
+        var rOk = !it.hasAttribute("data-rar") || rarFilter === "ALL" || it.getAttribute("data-rar") === rarFilter;
+        var tOk = !term || secHit || it.textContent.toLowerCase().indexOf(term) >= 0;
+        var ok = rOk && tOk;
+        it.classList.toggle("hidden-by-search", !ok);
+        if (ok) shown++;
+      });
+      var show = !term || secHit || shown > 0;
+      sec.classList.toggle("hidden-by-search", !show);
+      if (show) anyShown = true;
+    });
+    document.getElementById("empty").style.display = anyShown ? "none" : "block";
+    document.querySelectorAll("details.lv").forEach(function (d) { if (term && d.textContent.toLowerCase().indexOf(term) >= 0) d.open = true; });
+  }
+  q.addEventListener("input", applySearch);
+
+  // ---------- code copy ----------
+  var cb = document.getElementById("codeBtn");
+  cb.addEventListener("click", function () {
+    var done = function () { cb.textContent = "COPIED!"; setTimeout(function () { cb.textContent = "TINYCITY"; }, 1400); };
+    try { navigator.clipboard.writeText("TINYCITY").then(done, function () { selectCode(); }); } catch (e) { selectCode(); }
+  });
+  function selectCode() { var r = document.createRange(); r.selectNodeContents(cb); var s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+
+  // ---------- animations switch (the page does NOT follow the computer's reduce-motion setting) ----------
+  var mb = document.getElementById("motionBtn");
+  function setMotion(on) {
+    root.classList.toggle("calm", !on);
+    mb.setAttribute("aria-pressed", on ? "true" : "false");
+    mb.textContent = "Animations: " + (on ? "ON" : "OFF");
+  }
+  var root = document.documentElement;
+  try { setMotion(localStorage.getItem("tc-motion") !== "off"); } catch (e) { setMotion(true); }
+  mb.addEventListener("click", function () {
+    var on = root.classList.contains("calm");
+    setMotion(on);
+    try { localStorage.setItem("tc-motion", on ? "on" : "off"); } catch (e) {}
+  });
+  // the nav shows which section you are in
+  if ("IntersectionObserver" in window) {
+    var links = {};
+    document.querySelectorAll(".nav a").forEach(function (a) { links[a.getAttribute("href").slice(1)] = a; });
+    var spy = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (e.isIntersecting && links[e.target.id]) {
+          Object.keys(links).forEach(function (k) { links[k].classList.remove("here"); });
+          links[e.target.id].classList.add("here");
+          var a = links[e.target.id], nav = a.parentNode;
+          nav.scrollTo({left: a.offsetLeft - nav.clientWidth / 2 + a.offsetWidth / 2, behavior: "smooth"});
+        }
+      });
+    }, {rootMargin: "-40% 0px -55% 0px"});
+    document.querySelectorAll("[data-sec]").forEach(function (sec) { spy.observe(sec); });
+  }
+
+  // ---------- theme ----------
+  var tbtn = document.getElementById("themeBtn");
+  function isDark() { var t = root.getAttribute("data-theme"); return t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; }
+  function label() { tbtn.textContent = isDark() ? "Day mode" : "Night mode"; }
+  try { var saved = localStorage.getItem("tc-theme"); if (saved) root.setAttribute("data-theme", saved); } catch (e) {}
+  label();
+  tbtn.addEventListener("click", function () {
+    var next = isDark() ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("tc-theme", next); } catch (e) {}
+    label();
+  });
+})();
+</script>
